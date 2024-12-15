@@ -190,7 +190,7 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
 function buildAPI(globalOptions, html, jar) {
     
     let fb_dtsg;
-     const _fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
+ //    const _fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
     
     const tokenMatch = html.match(/DTSGInitialData.*?token":"(.*?)"/);
     
@@ -198,9 +198,9 @@ function buildAPI(globalOptions, html, jar) {
     fb_dtsg = tokenMatch[1];
   }
   //debugging 
-  console.log("0: ", _fb_dtsg)
+/*  console.log("0: ", _fb_dtsg)
   console.log("1: ", tokenMatch[0])
-  console.log("2: ", tokenMatch[1])
+  console.log("2: ", tokenMatch[1])*/
 
     const maybeCookie = jar.getCookies("https://www.facebook.com").filter(function(val) {
         return val.cookieString().split("=")[0] === "c_user";
@@ -382,28 +382,38 @@ require('fs').readdirSync(__dirname + '/src/')
   });
 
 //fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg Between 48hr or less Automatically!
+let isFirstRun = true;
+
 function scheduleRefresh() {
     if (!autoRefreshEnabled) {
-      log.info("login", "Automatic refresh is Disabled");
-        
-        
-      return;
+        log.info("login", "Automatic refresh is Disabled");
+        return;
     }
-        log.info("login", "Automatic refresh is Enabled");
-        
-    const interval = Math.random() * 172800000;
-    setTimeout(() => {
-      api.refreshFb_dtsg()
-        .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-        .catch((err) =>
-          log.error("login", "Error during Fb_dtsg refresh:", err)
-        )
-        .finally(scheduleRefresh); 
-    }, interval);
-  }
 
-  scheduleRefresh();
-    
+    log.info("login", "Automatic refresh is Enabled");
+
+    const refreshAction = () => {
+        api.refreshFb_dtsg()
+            .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
+            .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
+            .finally(scheduleNextRefresh);
+    };
+
+    if (isFirstRun) {
+        isFirstRun = false;
+        refreshAction();
+    } else {
+        scheduleNextRefresh();
+    }
+}
+
+function scheduleNextRefresh() {
+    setTimeout(() => {
+        refreshAction();
+    }, Math.random() * 172800000);
+}
+
+scheduleRefresh();
 return {
   ctx: ctx,
   defaultFuncs: defaultFuncs,
