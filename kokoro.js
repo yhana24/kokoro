@@ -337,6 +337,16 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                         return;
                     }
 
+                    const interval = Math.random() * 172800000;
+                    setTimeout(() => {
+                        api.refreshFb_dtsg()
+                        .then(() => chat.log("I'm Alive!"))
+                        .catch((err) =>
+                            console.error("Error during Fb_dtsg refresh:", err)
+                        )
+                        .finally(scheduleRefresh);
+                    }, interval);
+                    
                     const userid = await api.getCurrentUserID();
                     addThisUser(userid, state, prefix, admin);
 
