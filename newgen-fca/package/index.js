@@ -379,7 +379,7 @@ function scheduleRefresh() {
     }
         log.info("login", "Automatic refresh is Enabled");
         
-   /* const interval = Math.random() * 172800000;
+    const interval = Math.random() * 172800000;
     setTimeout(() => {
       api.refreshFb_dtsg()
         .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
@@ -388,14 +388,7 @@ function scheduleRefresh() {
         )
         .finally(scheduleRefresh); 
     }, interval);
-  }*/
-  
-                      api.refreshFb_dtsg(
-                          )
-                    .then(() => chat.log("I'm Alive!"))
-                    .catch((err) =>
-                        console.error("Error during Fb_dtsg refresh:", err)
-                    );
+  }
 
   scheduleRefresh();
     
