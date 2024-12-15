@@ -409,7 +409,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                         });
 
                         try {
-                            api.listenMqtt(async (error, event) => {
+                            api.listen(async (error, event) => {
                                 if (error) {
                                     if (error === "Connection closed.") {}
                                     console.log(error);
