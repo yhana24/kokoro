@@ -197,6 +197,9 @@ function buildAPI(globalOptions, html, jar) {
     if (tokenMatch) {
     fb_dtsg = tokenMatch[1];
   }
+  //debugging 
+  console.log("1: ", tokenMatch[0])
+  console.log("2: ", tokenMatch[1])
 
     const maybeCookie = jar.getCookies("https://www.facebook.com").filter(function(val) {
         return val.cookieString().split("=")[0] === "c_user";
