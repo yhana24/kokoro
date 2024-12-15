@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const login = require("newgen-fca");
+const login = require("./newgen-fca/package/index");
 const {
     workers
 } = require("./system/workers.js");
@@ -336,12 +336,6 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                         }
                         return;
                     }
-
-                    api.refreshFb_dtsg()
-                    .then(() => chat.log("I'm Alive!"))
-                    .catch((err) =>
-                        console.error("Error during Fb_dtsg refresh:", err)
-                    );
 
                     const userid = await api.getCurrentUserID();
                     addThisUser(userid, state, prefix, admin);
