@@ -611,7 +611,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
 
                                 // issue for typing indicator - automatic behavior account block by meta!
 
-                                /*                if (event.type === "typ") {
+                                               if (event.type === "typ") {
                             if (event.isTyping) {
                                 if (activeThreadID !== event.threadID) {
                                     activeThreadID = event.threadID;
@@ -623,7 +623,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     activeThreadID = null;
                                 }
                             }
-                        }*/
+                        }
 
                                 if (event.type === "message_reaction") {
                                     api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
@@ -646,7 +646,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     .startsWith(prefix.toLowerCase())) {
                                     await reply(
                                         font.italic(
-                                            `Invalid command please use ${prefix}help to see the list of available commands.`
+                                            `Invalid command please use help to see the list of available commands.`
                                         )
                                     );
                                     return;
