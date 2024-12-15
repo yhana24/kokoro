@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const login = require("./newgen-fca/package/index");
+const login = require("./chatbox-fca-remake/package/index");
 const {
     workers
 } = require("./system/workers.js");
@@ -311,7 +311,8 @@ startServer();
 cron.schedule('*/5 * * * *', () => {
     axios.get(`http://localhost:${PORT}/online-users`)
     .then(() => {
-        chat.log(`SELF PING SUCCESSFUL SERVER PORT: ${PORT} IS ACTIVE!`);
+        const time = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila", hour12: true });
+        chat.log(`TIME: ${time}\nSERVER PORT: ${PORT}\nSTATUS: ALIVE!`);
     })
     .catch((error) => {
         console.error('SELF PING FAILED: ', error.message);
