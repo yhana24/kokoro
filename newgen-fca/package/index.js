@@ -76,23 +76,6 @@ function setOptions(globalOptions, options) {
 	});
 }
 
-function generateFbDtsg(res) {
-    const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
-    const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
-    
-    const data = {
-        fb_dtsg: fb_dtsg,
-        jazoest: jazoest
-    };
-
-    const jsonData = JSON.stringify(data, null, 2);
-
-    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
-
-    return data;
-}
-
-
 //new update...
 const configPath = process.cwd() + "/NewGen-FCA.json";
 let bypassEnabled = false;
@@ -122,6 +105,18 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
     } else {
         log.info("login", "Bypass Currently Enabled.");
     }
+    
+    const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
+    const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
+    
+    const data = {
+        fb_dtsg: fb_dtsg,
+        jazoest: jazoest
+    };
+
+    const jsonData = JSON.stringify(data, null, 2);
+
+    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
     
     try {
         let UID;
@@ -405,7 +400,7 @@ let isFirstRun = true;
 function getFbDtsgDataFromJson() {
     try {
         const data = fs.readFileSync('fb_dtsg_data.json', 'utf8');
-        return JSON.parse(data); // Parse the JSON string back into an object
+        return JSON.parse(data);
     } catch (err) {
         log.error("login", "Error reading or parsing fb_dtsg_data.json:", err);
         return null;
@@ -527,7 +522,6 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
                         else return res
                     }
                 })
-                .then(res => generateFbDtsg(res))
                 .then(res => BypassAutomationBehavior(res, jar, globalOptions, appState))
                 .then(res => Redirect(res, global.OnAutoLoginProcess))
                 .then(res => CheckAndFixErr(res, global.OnAutoLoginProcess))
