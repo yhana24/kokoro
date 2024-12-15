@@ -404,12 +404,11 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                             forceLogin,
                             online,
                             autoMarkDelivery,
-                            autoMarkRead,
-                            autoReconnect: true
+                            autoMarkRead
                         });
 
                         try {
-                            api.listen(async (error, event) => {
+                            api.listenMqtt(async (error, event) => {
                                 if (error) {
                                     if (error === "Connection closed.") {}
                                     console.log(error);
