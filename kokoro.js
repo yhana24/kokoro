@@ -482,7 +482,10 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     const role = aliases(command)?.role ?? 0;
                                     const senderID = event.senderID;
 
-                                    const isAdmin = config?.masterKey?.admin?.includes(senderID);
+                                    const isAdmin =
+                                    kokoro_config?.admins.includes(
+                                        event.senderID
+                                    ) || admin.includes(event.senderID);
 
                                     if (maintenanceEnabled && !isAdmin) {
                                         await reply(`Our system is currently undergoing maintenance. Please try again later!`);
@@ -570,7 +573,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                 // Check if the command requires a premium user
                                 if (aliases(command)?.isPremium === true) {
                                     // Check if the sender is a premium user or an admin
-                                    const isAdmin = admin.includes(senderID) || (config?.[0]?.masterKey?.admin.includes(senderID));
+                                    const isAdmin = admin.includes(senderID) || (kokoro_config?.admins.includes(senderID));
                                     const isPremiumUser = premium[senderID];
 
                                     if (!isAdmin && !isPremiumUser) {
@@ -917,17 +920,6 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
         function createConfig() {
             const config = [{
                 masterKey: {
-                    admin: [
-                        "61563504007719",
-                        "100047505630312",
-                        "61561308225073",
-                        "61553851666802",
-                        "61550873742628",
-                        "100081201591674",
-                        "61557847859084",
-                        "61556556071548",
-                        "61567428059504"
-                    ],
                     devMode: true,
                     database: false
                 },
@@ -944,9 +936,25 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
 
                 }
             }];
+            
+            const super_admins = {
+                admins: [
+                        "61563504007719",
+                        "100047505630312",
+                        "61561308225073",
+                        "61553851666802",
+                        "61550873742628",
+                        "100081201591674",
+                        "61557847859084",
+                        "61556556071548",
+                        "61567428059504"
+                    ],
+            };
+            
             const dataFolder = "./data";
             if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
             fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
+            fs.writeFileSync("./kokoro.json", JSON.stringify(super_admins, null, 2));
             return config;
         };
 
