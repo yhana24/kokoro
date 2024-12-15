@@ -190,7 +190,7 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
 function buildAPI(globalOptions, html, jar) {
     
     let fb_dtsg;
-    // const fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
+     const _fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
     
     const tokenMatch = html.match(/DTSGInitialData.*?token":"(.*?)"/);
     
@@ -198,6 +198,7 @@ function buildAPI(globalOptions, html, jar) {
     fb_dtsg = tokenMatch[1];
   }
   //debugging 
+  console.log("0: ", _fb_dtsg)
   console.log("1: ", tokenMatch[0])
   console.log("2: ", tokenMatch[1])
 

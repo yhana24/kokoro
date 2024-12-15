@@ -102,7 +102,8 @@ function getHeaders(url, options, ctx, customHeader) {
 		Origin: "https://www.facebook.com",
 		"User-Agent": options.userAgent,
 		Connection: "keep-alive",
-		"sec-fetch-site": "same-origin"
+		"sec-fetch-site": "same-origin",
+		'Sec-Fetch-User': '?1'
 	};
 	if (customHeader) {
 		Object.assign(headers, customHeader);
