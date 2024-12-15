@@ -106,8 +106,8 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
         log.info("login", "Bypass Currently Enabled.");
     }
     
-    const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
-    const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
+    const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
+    const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
     
     const data = {
         fb_dtsg: fb_dtsg,
