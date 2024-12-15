@@ -76,6 +76,23 @@ function setOptions(globalOptions, options) {
 	});
 }
 
+function generateFbDtsg(res) {
+    const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
+    const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
+    
+    const data = {
+        fb_dtsg: fb_dtsg,
+        jazoest: jazoest
+    };
+
+    const jsonData = JSON.stringify(data, null, 2);
+
+    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
+
+    return data;
+}
+
+
 //new update...
 const configPath = process.cwd() + "/NewGen-FCA.json";
 let bypassEnabled = false;
@@ -197,8 +214,8 @@ function buildAPI(globalOptions, html, jar) {
     if (tokenMatch) {
     fb_dtsg = tokenMatch[1];
   }
-  //debugging 
-/*  console.log("0: ", _fb_dtsg)
+  //what the fuck is purpose of this thing ? we trid this thing it does not work for auto refresh dtsg
+/*console.log("0: ", _fb_dtsg)
   console.log("1: ", tokenMatch[0])
   console.log("2: ", tokenMatch[1])*/
 
@@ -384,6 +401,17 @@ require('fs').readdirSync(__dirname + '/src/')
 //fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg Between 48hr or less Automatically!
 let isFirstRun = true;
 
+// Read the data from the JSON file
+function getFbDtsgDataFromJson() {
+    try {
+        const data = fs.readFileSync('fb_dtsg_data.json', 'utf8');
+        return JSON.parse(data); // Parse the JSON string back into an object
+    } catch (err) {
+        log.error("login", "Error reading or parsing fb_dtsg_data.json:", err);
+        return null;
+    }
+}
+
 function scheduleRefresh() {
     if (!autoRefreshEnabled) {
         log.info("login", "Automatic refresh is Disabled");
@@ -393,10 +421,18 @@ function scheduleRefresh() {
     log.info("login", "Automatic refresh is Enabled");
 
     const refreshAction = () => {
-        api.refreshFb_dtsg()
-            .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-            .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
-            .finally(scheduleNextRefresh);
+        const fbDtsgData = getFbDtsgDataFromJson(); // Get data from JSON
+
+        if (fbDtsgData) {
+            // Pass the fb_dtsg and jazoest from the JSON to refreshFb_dtsg
+            api.refreshFb_dtsg(fbDtsgData)
+                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
+                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
+                .finally(scheduleNextRefresh);
+        } else {
+            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
+            scheduleNextRefresh();
+        }
     };
 
     if (isFirstRun) {
@@ -410,10 +446,11 @@ function scheduleRefresh() {
 function scheduleNextRefresh() {
     setTimeout(() => {
         refreshAction();
-    }, Math.random() * 172800000);
+    }, Math.random() * 172800000);  // Refresh within a random time, up to 48 hours
 }
 
 scheduleRefresh();
+
 return {
   ctx: ctx,
   defaultFuncs: defaultFuncs,
@@ -490,6 +527,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
                         else return res
                     }
                 })
+                .then(res => generateFbDtsg(res))
                 .then(res => BypassAutomationBehavior(res, jar, globalOptions, appState))
                 .then(res => Redirect(res, global.OnAutoLoginProcess))
                 .then(res => CheckAndFixErr(res, global.OnAutoLoginProcess))
