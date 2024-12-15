@@ -188,7 +188,15 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
 }
 
 function buildAPI(globalOptions, html, jar) {
-    const fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
+    
+    let fb_dtsg;
+    // const fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
+    
+    const tokenMatch = html.match(/DTSGInitialData.*?token":"(.*?)"/);
+    
+    if (tokenMatch) {
+    fb_dtsg = tokenMatch[1];
+  }
 
     const maybeCookie = jar.getCookies("https://www.facebook.com").filter(function(val) {
         return val.cookieString().split("=")[0] === "c_user";
