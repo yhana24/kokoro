@@ -140,11 +140,15 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
 			queue.device_params = null;
 		}
 
-		mqttClient.publish(topic, JSON.stringify(queue), { qos: 1, retain: false });
-		mqttClient.publish("/foreground_state", JSON.stringify({ "foreground": chatOn }), { qos: 1 });
-		var rTimeout = setTimeout(function () {
+        mqttClient.publish(topic, JSON.stringify(queue), { qos: 1, retain: false });
+		// set status online
+		// fix by NTKhang
+		mqttClient.publish("/foreground_state", JSON.stringify({ foreground: chatOn }), { qos: 1 });
+		mqttClient.publish("/set_client_settings", JSON.stringify({ make_user_available_when_in_foreground: true }), { qos: 1 });
+
+		const rTimeout = setTimeout(function () {
 			mqttClient.end();
-			getSeqID();
+			listenMqtt(defaultFuncs, api, ctx, globalCallback);
 		}, 3000);
 
 		ctx.tmsWait = function () {
