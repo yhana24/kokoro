@@ -1,6 +1,5 @@
 const axios = require("axios");
-const devs = require(__dirname.replace("/script", "") + '/system/api');
-
+const devs = require(path.join(__dirname, '../system/api'));
 //https://markdevs-last-api-s7d0.onrender.com/genuines-ai?name=Aristotle&question=hi
 
 module.exports["config"] = {
