@@ -601,7 +601,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     }
                                 }
 
-                                let activeThreadID = null;
+                      /*          let activeThreadID = null;
 
                                 // issue for typing indicator - automatic behavior account block by meta!
 
@@ -617,7 +617,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     activeThreadID = null;
                                 }
                             }
-                        }
+                        }*/
 
                                 if (event.type === "message_reaction") {
                                     api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
