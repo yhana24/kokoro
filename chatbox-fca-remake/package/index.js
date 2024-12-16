@@ -209,21 +209,41 @@ function buildAPI(globalOptions, html, jar) {
     if (tokenMatch) {
     fb_dtsg = tokenMatch[1];
   }
-  //what the fuck is purpose of this thing ? we trid this thing it does not work for auto refresh dtsg
-/*console.log("0: ", _fb_dtsg)
-  console.log("1: ", tokenMatch[0])
-  console.log("2: ", tokenMatch[1])*/
+ 
 
-    const maybeCookie = jar.getCookies("https://www.facebook.com").filter(function(val) {
+    let userID;
+    
+        //@Kenneth Panio: i fixed the cookie do not change or remove this line what it does? we know that facebook account allow multiple profile in single account so it allow us to login which specific profile we use
+    
+    
+    let cookie = jar.getCookies("https://www.facebook.com");
+    let primary_profile = cookie.filter(function (val) {
         return val.cookieString().split("=")[0] === "c_user";
     });
-
-    if (maybeCookie.length === 0) throw { error: "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify." };
-
-    if (html.indexOf("/checkpoint/block/?next") > -1) log.warn("login", "Checkpoint detected. Please log in with a browser to verify.");
-
-    const userID = maybeCookie[0].cookieString().split("=")[1].toString();
+    let secondary_profile = cookie.filter(function (val) {
+        return val.cookieString().split("=")[0] === "i_user";
+    });
+    if (primary_profile.length === 0 && secondary_profile.length === 0) {
+        throw {
+            error:
+            "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.",
+        };
+    } else {
+        if (html.indexOf("/checkpoint/block/?next") > -1) {
+            return log.warn(
+                "login",
+                "Checkpoint detected. Please log in with a browser to verify."
+            );
+        }
+        if (secondary_profile[0] && secondary_profile[0].cookieString().includes('i_user')) {
+            userID = secondary_profile[0].cookieString().split("=")[1].toString();
+        } else {
+            userID = primary_profile[0].cookieString().split("=")[1].toString();
+        }
+    }
+    
     log.info("login", `Logged in as ${userID}`);
+    log.info("Fix", "By Kenneth Panio");
     
     try {
         clearInterval(checkVerified);
