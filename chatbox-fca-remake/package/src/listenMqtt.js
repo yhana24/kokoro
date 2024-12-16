@@ -692,7 +692,7 @@ module.exports = function (defaultFuncs, api, ctx) {
 		};
 
 		if (!ctx.firstListen || !ctx.lastSeqId) {
-			getSeqId(defaultFuncs, api, ctx, globalCallback);
+			getSeqID(defaultFuncs, api, ctx, globalCallback);
 		} else {
 			listenMqtt(defaultFuncs, api, ctx, globalCallback);
 		}
