@@ -415,11 +415,15 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     if (error === "Connection closed.") {}
                                     console.log(error);
                                 }
-                                
-                                if (event.senderID && event.body) {
-
 
                                 const chat = new OnChat(api, event);
+                                
+                                                                if (event.senderID && event.body) {
+                                
+                                chat.log(`ID: ${event.senderID}\nMessage: ${event.body}`);
+                                
+                                }
+
 
                                 chat.killme(kokoro_config.author, 2);
 
