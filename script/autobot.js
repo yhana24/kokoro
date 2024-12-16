@@ -1,4 +1,6 @@
 const axios = require('axios');
+const fs = require("fs");
+const configPath = path.join(__dirname, '../kokoro.json');
 
 module.exports["config"] = {
   name: "autobot",
@@ -12,7 +14,15 @@ module.exports["config"] = {
 };
 
 module.exports["run"] = async ({ api, chat, event, args, font, global }) => {
-  const server = global.host.server[0] + ":" + global.host.port;
+
+
+if (!fs.existsSync(configPath)) {
+    return api.sendMessage('Configuration file not found!', event.threadID, event.messageID);
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  
+  const server = config.weblink + ":" + config.port || config.weblink || global.host.server[0] + ":" + global.host.port || global.host.port;
   const tin = txt =>
    font.monospace(txt);
   const input = args[0];
