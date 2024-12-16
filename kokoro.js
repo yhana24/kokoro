@@ -426,7 +426,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                 chat.killme(kokoro_config.author, 2);
 
                                 const reply = async (msg) => {
-                                    const msgInfo = await chat.reply(msg);
+                                    const msgInfo = await chat.reply(font.thin(msg));
                                     msgInfo?.unsend(5000);
                                 };
 
@@ -469,9 +469,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
 
                                 if (isPrefix && aliases(command)?.isPrefix === false) {
                                     await reply(
-                                        font.thin(
                                             `this command doesn't need a prefix set by author.`
-                                        )
                                     );
                                     return;
                                 }
@@ -513,9 +511,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     aliases(command)?.name) {
                                     if (blacklist?.includes(event.senderID)) {
                                         await reply(
-                                            font.thin(
                                                 "We're sorry, but you've been banned from using bot. If you believe this is a mistake or would like to appeal, please contact one of the bot admins for further assistance."
-                                            )
                                         );
                                         chat.react("🖕");
                                         return;
@@ -546,9 +542,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                         );
                                         chat.react("⏳");
                                         await reply(
-                                            font.thin(
                                                 `Please wait ${active} second(s) before using the "${name}" command again.`
-                                            )
                                         );
                                         return;
                                     }
@@ -596,7 +590,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
 
                                         const updatedUsageInfo = Utils.limited.get(usageKey);
                                         if (updatedUsageInfo.count >= aliases(command)?.limit) {
-                                            await reply(font.thin(`Limit Reached: This command is available up to ${aliases(command)?.limit} times per 25 minutes for standard users. To access unlimited usage, please upgrade to our Premium version. For more information, contact us directly at `) + `https://www.facebook.com/haji.atomyc2727`);
+                                            await reply(`Limit Reached: This command is available up to ${aliases(command)?.limit} times per 25 minutes for standard users. To access unlimited usage, please upgrade to our Premium version. For more information, contact us directly at ` + `https://www.facebook.com/haji.atomyc2727`);
                                             return;
                                         } else {
                                             Utils.limited.set(usageKey, {
@@ -644,9 +638,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     ?.toLowerCase()
                                     .startsWith(prefix.toLowerCase())) {
                                     await reply(
-                                        font.italic(
                                             `Invalid command please use help to see the list of available commands.`
-                                        )
                                     );
                                     return;
                                 }
@@ -659,9 +651,7 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                     .startsWith(prefix.toLowerCase()) &&
                                     !aliases(command)?.name) {
                                     await reply(
-                                        font.italic(
                                             `Invalid command '${command}' please use ${prefix}help to see the list of available commands.`
-                                        )
                                     );
                                     return;
                                 }
