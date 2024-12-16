@@ -28,12 +28,12 @@ var topics = [
 	"/orca_presence",
 	//Will receive /sr_res right here.
 
-	"/inbox",
-	"/mercury",
-	"/messaging_events",
-	"/orca_message_notifications",
-	"/pp",
-	"/webrtc_response",
+	// "/inbox",
+	// "/mercury",
+	// "/messaging_events",
+	// "/orca_message_notifications",
+	// "/pp",
+	// "/webrtc_response",
 ];
 
 function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
@@ -161,12 +161,15 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
 		};
 	});
 
-	mqttClient.on('message', function (topic, message, _packet) {
+mqttClient.on('message', function (topic, message, _packet) {
+		let jsonMessage = Buffer.isBuffer(message) ? Buffer.from(message).toString() : message;
 		try {
-			var jsonMessage = JSON.parse(message);
-		} catch (ex) {
-			return log.error("listenMqtt", ex);
+			jsonMessage = JSON.parse(jsonMessage);
 		}
+		catch (e) {
+			jsonMessage = {};
+		}
+		
 		if (topic === "/t_ms") {
 			if (ctx.tmsWait && typeof ctx.tmsWait == "function") ctx.tmsWait();
 
@@ -688,9 +691,14 @@ module.exports = function (defaultFuncs, api, ctx) {
 			})
 		};
 
-		if (!ctx.firstListen || !ctx.lastSeqId) getSeqID();
-		else listenMqtt(defaultFuncs, api, ctx, globalCallback);
-		ctx.firstListen = false;
+		if (!ctx.firstListen || !ctx.lastSeqId) {
+			getSeqId(defaultFuncs, api, ctx, globalCallback);
+		} else {
+			listenMqtt(defaultFuncs, api, ctx, globalCallback);
+		}
+
+		api.stopListening = msgEmitter.stopListening;
+		api.stopListeningAsync = msgEmitter.stopListeningAsync;
 		return msgEmitter;
 	};
 };
