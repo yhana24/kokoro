@@ -319,7 +319,7 @@ cron.schedule('*/5 * * * *', () => {
     });
 });
 
-async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000) {
+async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
     var global = await workers();
 
     return new Promise((resolve, reject) => {
@@ -330,11 +330,12 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                 },
                 async (error, api) => {
                     if (error) {
-                        if (retryCount > 0) {
-                            setTimeout(() => attemptLogin(retryCount - 1), delay);
+ /*                       if (retryCount > 0) {
+                            setTimeout(() => attemptLogin(retryCount - 1), 5000);
                         } else {
                             reject(new Error("Max retries reached. Login failed."));
-                        }
+                        }*/
+                        reject(error);
                         return;
                     }
 
@@ -762,27 +763,28 @@ async function accountLogin(state, prefix, admin = [], retries = 1, delay = 5000
                                 Utils.account.delete(userid);
                                 deleteThisUser(userid);
 
-                                if (retryCount > 0) {
+/*                                if (retryCount > 0) {
                                     setTimeout(() => attemptLogin(retryCount - 1), delay);
                                 } else {
                                     reject(new Error("Max retries reached. Listen setup failed."));
-                                }
+                                }*/
                                 return;
                             }
 
                                 resolve();
                             } catch (error) {
-                                if (retryCount > 0) {
-                                    setTimeout(() => attemptLogin(retryCount - 1), delay);
+                         console.error(error)
+/*                                if (retryCount > 0) {
+                                    setTimeout(() => attemptLogin(retryCount - 1), 5000);
                                 } else {
                                     reject(new Error("Max retries reached. Unable to complete user info retrieval."));
-                                }
+                                }*/
                             }
                         }
                     );
                 };
 
-                attemptLogin(retries);
+              //  attemptLogin(retries);
             });
     }
 
