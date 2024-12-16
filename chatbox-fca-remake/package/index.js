@@ -201,14 +201,14 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
 
 function buildAPI(globalOptions, html, jar) {
     
-//    let fb_dtsg;
-     const fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
+    let fb_dtsg;
+   //  const fb_dtsg = utils.getFroms(html, '["DTSGInitData",[],{"token":"', '","')[0]; //my brain is not braining on here.
     
-/*    const tokenMatch = html.match(/DTSGInitialData.*?token":"(.*?)"/);
+    const tokenMatch = html.match(/DTSGInitialData.*?token":"(.*?)"/);
     
     if (tokenMatch) {
     fb_dtsg = tokenMatch[1];
-  }*/
+  }
   //what the fuck is purpose of this thing ? we trid this thing it does not work for auto refresh dtsg
 /*console.log("0: ", _fb_dtsg)
   console.log("1: ", tokenMatch[0])
