@@ -493,8 +493,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     }
 
                                     // Role-based permission checks
-                                    const isThreadAdmin = isAdmin || [])
-                                    .some(admin => admin.id === senderID);
+                                    const isThreadAdmin = isAdmin;
 
                                     if ((role === 1 && !isAdmin) ||
                                         (role === 2 && !isThreadAdmin) ||
@@ -763,28 +762,15 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                 Utils.account.delete(userid);
                                 deleteThisUser(userid);
 
-/*                                if (retryCount > 0) {
-                                    setTimeout(() => attemptLogin(retryCount - 1), delay);
-                                } else {
-                                    reject(new Error("Max retries reached. Listen setup failed."));
-                                }*/
                                 return;
                             }
 
                                 resolve();
                             } catch (error) {
                          console.error(error)
-/*                                if (retryCount > 0) {
-                                    setTimeout(() => attemptLogin(retryCount - 1), 5000);
-                                } else {
-                                    reject(new Error("Max retries reached. Unable to complete user info retrieval."));
-                                }*/
                             }
                         }
                     );
- /*               };
-
-                attemptLogin(retries);*/
             });
     }
 
@@ -913,6 +899,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
             const config = [{
                 masterKey: {
                     devMode: true,
+                    database: false
                 },
                 fcaOption: {
                     forceLogin: true,
