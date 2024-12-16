@@ -493,8 +493,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     }
 
                                     // Role-based permission checks
-                                    const isThreadAdmin = isAdmin ||
-                                    (database[0]?.Threads[event.threadID]?.adminIDs || [])
+                                    const isThreadAdmin = isAdmin || [])
                                     .some(admin => admin.id === senderID);
 
                                     if ((role === 1 && !isAdmin) ||
@@ -914,7 +913,6 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
             const config = [{
                 masterKey: {
                     devMode: true,
-                    database: false
                 },
                 fcaOption: {
                     forceLogin: true,

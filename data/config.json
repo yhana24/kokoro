@@ -1,8 +1,7 @@
 [
         {
                 "masterKey": {
-                        "devMode": false,
-                        "database": false
+                        "devMode": false
                 },
                 "fcaOption": {
                         "forceLogin": true,
