@@ -35,7 +35,7 @@ module.exports = ({ api, font, chat }) => {
             const threads = await api.getThreadList(5, null, ['INBOX']);
             for (const thread of threads) {
                 if (thread.isGroup) {
-                    await api.sendMessage(mono(msgTxt), thread.threadID).catch(console.error);
+                    await api.sendMessage(mono(msgTxt), thread.threadID).catch();
                 }
             }
         } catch (error) {
@@ -54,7 +54,7 @@ module.exports = ({ api, font, chat }) => {
             const threads = await api.getThreadList(25, null, ['INBOX']);
             for (const thread of threads) {
                 if (!thread.isGroup) {
-                    await api.deleteThread(thread.threadID).catch(console.error);
+                    await api.deleteThread(thread.threadID).catch();
                 }
             }
         } catch (error) {
@@ -67,7 +67,7 @@ module.exports = ({ api, font, chat }) => {
             chat.log("Accepting pending messages...");
             const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
             for (const thread of pendingThreads) {
-                await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch(console.error);
+                await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch();
             }
         } catch (error) {
             console.error("Error accepting pending messages:", error);
@@ -84,7 +84,7 @@ module.exports = ({ api, font, chat }) => {
             }
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             const quote = `"${randomQuote.quoteText}"\n\n— ${randomQuote.quoteAuthor || "Anonymous"}`;
-            await api.createPost(mono(quote)).catch(console.error);
+            await api.createPost(mono(quote)).catch();
         } catch (error) {
             console.error("Error posting motivational quote:", error);
         }

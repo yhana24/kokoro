@@ -12,7 +12,7 @@ const axios = require("axios");
 const script = path.join(__dirname, "script");
 const cron = require("node-cron");
 const config = fs.existsSync("./data/config.json") ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-const kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
+let kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
 
 const {
     encryptSession,
@@ -417,6 +417,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                 }
 
                                 const chat = new OnChat(api, event);
+                                kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
                                 
                                                                 if (event.senderID && event.body) {
                                 
