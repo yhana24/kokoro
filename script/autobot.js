@@ -24,9 +24,9 @@ if (!fs.existsSync(configPath)) {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   
   const server = 
-  (config.weblink && config.port ? `${config.weblink}:${config.port}` : "") ||
+  (config.weblink && config.port ? `${config.weblink}:${config.port}` : null) ||
   config.weblink ||
-  (global.host.server[0] && global.host.port ? `${global.host.server[0]}:${global.host.port}` : "") ||
+  (global.host.server[0] && global.host.port ? `${global.host.server[0]}:${global.host.port}` : null) ||
   global.host.port;
 
 

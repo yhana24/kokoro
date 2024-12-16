@@ -16,8 +16,7 @@ module.exports["config"] = {
 };
 
 module.exports["run"] = async ({
-    api, event, Utils, prefix, args, chat, font
-}) => {
+    api, event, Utils, prefix, args, chat, font, global }) => {
     
     if (!fs.existsSync(configPath)) {
     return api.sendMessage('Configuration file not found!', event.threadID, event.messageID);
@@ -26,9 +25,9 @@ module.exports["run"] = async ({
   const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   
   const server = 
-  (config.weblink && config.port ? `${config.weblink}:${config.port}` : "") ||
+  (config.weblink && config.port ? `${config.weblink}:${config.port}` : null) ||
   config.weblink ||
-  (global.host.server[0] && global.host.port ? `${global.host.server[0]}:${global.host.port}` : "") ||
+  (global.host.server[0] && global.host.port ? `${global.host.server[0]}:${global.host.port}` : null) ||
   global.host.port;
 
 
