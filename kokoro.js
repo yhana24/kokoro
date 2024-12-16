@@ -388,7 +388,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                             1000);
 
                         const cronjob = require('./system/custom.js')({
-                            chat,
+                            chat: new OnChat(),
                             api,
                             font,
                             fonts: font

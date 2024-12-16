@@ -8,7 +8,7 @@ module.exports["config"] = {
   role: 2,
   credits: "Markdevs69",
   info: "Turn on/off Maintenance mode.",
-  commandCategory: "Admin",
+  type: "Admin",
   usages: "[on/off]",
   cd: 5,
 };
