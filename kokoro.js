@@ -323,7 +323,7 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
     var global = await workers();
 
     return new Promise((resolve, reject) => {
-        const attemptLogin = async (retryCount) => {
+ /*       const attemptLogin = async (retryCount) => {*/
             login(
                 {
                     appState: state
@@ -782,9 +782,9 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                             }
                         }
                     );
-                };
+ /*               };
 
-              //  attemptLogin(retries);
+                attemptLogin(retries);*/
             });
     }
 
