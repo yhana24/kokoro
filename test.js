@@ -21,10 +21,6 @@ login({
     const stopListening = api.listenMqtt((err, event) => {
         if (err) return console.error(err);
 
-        api.markAsRead(event.threadID, (err) => {
-            if (err) console.error(err);
-        });
-
         switch (event.type) {
             case "message":
                 if (event.body === '/stop') {
