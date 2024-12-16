@@ -1,12 +1,21 @@
 const cron = require('node-cron');
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
 
-module.exports = ({ api, font }) => {
-    const mono = txt => font.monospace(txt);
+module.exports = ({ api, font, chat }) => {
+    const mono = txt => font.monospace ? font.monospace(txt) : txt;
 
-    const config = JSON.parse(fs.readFileSync('../kokoro.json', 'utf-8'));
-    const timezone = config.timezone;
+    const configPath = path.resolve(__dirname, '../kokoro.json');
+    let config;
+    try {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } catch (error) {
+        console.error("Error reading config file:", error);
+        return;
+    }
+
+    const timezone = config.timezone || "UTC";
 
     const greetings = {
         morning: ["Good morning! Have a great day!", "Rise and shine! Good morning!"],
@@ -16,7 +25,7 @@ module.exports = ({ api, font }) => {
     };
 
     function greetRandom(timeOfDay) {
-        const greetingsList = greetings[timeOfDay];
+        const greetingsList = greetings[timeOfDay] || [];
         return greetingsList[Math.floor(Math.random() * greetingsList.length)];
     }
 
@@ -26,7 +35,7 @@ module.exports = ({ api, font }) => {
             const threads = await api.getThreadList(5, null, ['INBOX']);
             for (const thread of threads) {
                 if (thread.isGroup) {
-                    await api.sendMessage(mono(msgTxt), thread.threadID);
+                    await api.sendMessage(mono(msgTxt), thread.threadID).catch(console.error);
                 }
             }
         } catch (error) {
@@ -35,33 +44,50 @@ module.exports = ({ api, font }) => {
     }
 
     async function restart() {
-        console.log("Restarting...");
+        chat.log("Restarting...");
         process.exit(0);
     }
 
     async function clearChat() {
-        console.log("Clearing chat...");
-        const threads = await api.getThreadList(25, null, ['INBOX']);
-        for (const thread of threads) {
-            if (!thread.isGroup) await api.deleteThread(thread.threadID);
+        try {
+            chat.log("Clearing chat...");
+            const threads = await api.getThreadList(25, null, ['INBOX']);
+            for (const thread of threads) {
+                if (!thread.isGroup) {
+                    await api.deleteThread(thread.threadID).catch(console.error);
+                }
+            }
+        } catch (error) {
+            console.error("Error clearing chat:", error);
         }
     }
 
     async function acceptPending() {
-        console.log("Accepting pending messages...");
-        const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
-        for (const thread of pendingThreads) {
-            await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID);
+        try {
+            chat.log("Accepting pending messages...");
+            const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
+            for (const thread of pendingThreads) {
+                await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch(console.error);
+            }
+        } catch (error) {
+            console.error("Error accepting pending messages:", error);
         }
     }
 
     async function motivation() {
-        console.log("Posting motivational quotes...");
-        const response = await axios.get("https://raw.githubusercontent.com/JamesFT/Database-Quotes-JSON/master/quotes.json");
-        const quotes = response.data;
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        const quote = `"${randomQuote.quoteText}"\n\n— ${randomQuote.quoteAuthor || "Anonymous"}`;
-        api.createPost(mono(quote)).catch(console.error);
+        try {
+            chat.log("Posting motivational quotes...");
+            const response = await axios.get("https://raw.githubusercontent.com/JamesFT/Database-Quotes-JSON/master/quotes.json");
+            const quotes = response.data;
+            if (!Array.isArray(quotes) || quotes.length === 0) {
+                throw new Error("Invalid quotes data received.");
+            }
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            const quote = `"${randomQuote.quoteText}"\n\n— ${randomQuote.quoteAuthor || "Anonymous"}`;
+            await api.createPost(mono(quote)).catch(console.error);
+        } catch (error) {
+            console.error("Error posting motivational quote:", error);
+        }
     }
 
     const scheduleGreetings = (timeOfDay, hours) => {
@@ -75,7 +101,7 @@ module.exports = ({ api, font }) => {
 
         if (key.endsWith('Greetings')) {
             const timeOfDay = key.replace('Greetings', '').toLowerCase();
-            scheduleGreetings(timeOfDay, job.hours);
+            scheduleGreetings(timeOfDay, job.hours || []);
         } else {
             const taskMap = { restart, clearChat, acceptPending, motivation };
             const task = taskMap[key];
