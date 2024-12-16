@@ -417,10 +417,6 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                 }
                                 
                                 if (event.senderID && event.body) {
-                                
-                                chat.log(`ID: ${event.senderID}\nMessage: ${event.body}`);
-                                
-                                }
 
 
                                 const chat = new OnChat(api, event);
