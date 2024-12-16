@@ -12,7 +12,7 @@ module.exports["config"] = {
 };
 
 module.exports["run"] = async ({ api, chat, event, args, font, global }) => {
-  const { server } = global.host.server[0] + ":" + global.host.port;
+  const server = global.host.server[0] + ":" + global.host.port;
   const tin = txt =>
    font.monospace(txt);
   const input = args[0];
