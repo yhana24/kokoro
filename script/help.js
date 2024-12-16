@@ -1,3 +1,7 @@
+const fs = require("fs");
+const path = require("path");
+const configPath = path.join(__dirname, '../kokoro.json');
+
 module.exports["config"] = {
     name: 'help',
     version: '1.0.0',
@@ -14,6 +18,15 @@ module.exports["config"] = {
 module.exports["run"] = async ({
     api, event, Utils, prefix, args, chat, font
 }) => {
+    
+    if (!fs.existsSync(configPath)) {
+    return api.sendMessage('Configuration file not found!', event.threadID, event.messageID);
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  
+  const server = config.weblink + ":" + config.port || config.weblink || global.host.server[0] + ":" + global.host.port || global.host.port;
+  
     var mono = txt => font.thin(txt);
     const input = args.join(' ').trim()?.toLowerCase();
     const allCommands = [...Utils.commands.values()];
@@ -36,7 +49,7 @@ module.exports["run"] = async ({
         helpMessage += `\n• To see another page, use "HELP" [page-number]'\n`;
         helpMessage += `• For more information use "HELP" [cmd name]"\n\n`;
         helpMessage += font.bold(`NOTE: NOT FOR SALE!`) + "\n- This bot is intended to be provided free of charge. The sale of any aspect of our service is strictly prohibited. If you encounter any instances of this bot being sold or any bugs, please contact us at lkpanio25@gmail.com. We also accept donations via GCash in any amount to help maintain the bot's availability 24/7. Thank you for your support.";
-        await chat.reply(mono(helpMessage) + font.bold("\nPROJECT MAINTAINER: ") + "https://www.facebook.com/haji.atomyc2727" + font.bold("\nAUTOBOT LINK: ") + "https://tinyurl.com/2cojhmk2" + font.bold("\nGCASH NUMBER: ") + "09468377615");
+        await chat.reply(mono(helpMessage) + font.bold("\nPROJECT MAINTAINER: ") + "https://www.facebook.com/haji.atomyc2727" + font.bold("\nAUTOBOT LINK: ") + server + font.bold("\nGCASH NUMBER: ") + "09468377615");
         const url_array = [
             "https://files.catbox.moe/b5csz8.gif",
             "https://files.catbox.moe/3irbyb.gif",
