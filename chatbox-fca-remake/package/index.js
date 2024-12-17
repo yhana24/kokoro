@@ -81,10 +81,8 @@ async function updateDtsg(resp) {
     const jsonData = JSON.stringify(data, null, 2);
 
     fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
-    return res;
     } catch (e) {
         log.error("dtsg_error_update", e);
-        return res;
     }
 }
 
@@ -383,7 +381,6 @@ async function loginHelper(appState, email, password, globalOptions) {
     })
     .then(async (res) => {
         updateDtsg();
-        return res;
     });
   if (globalOptions.pageID) {
     mainPromise = mainPromise
