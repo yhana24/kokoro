@@ -7,7 +7,6 @@ module.exports["config"] = {
   version: "4.8",
   role: 0,
   credits: "Markdevs69",
-  aliases: ["Ai","AI"],
   usage: "[prompt]",
   cd: 3,
 };
