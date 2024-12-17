@@ -540,7 +540,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
                     const html = res.body,Obj = buildAPI(globalOptions, html, jar,bypass_region_err);
                         ctx = Obj.ctx;
                         api = Obj.api;
-                        scheduleRefresh();
+                        scheduleRefresh()
                     return res;
                 });
             if (globalOptions.pageID) {
