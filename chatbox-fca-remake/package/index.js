@@ -253,10 +253,6 @@ function buildAPI(globalOptions, html, jar) {
   const defaultFuncs = utils.makeDefaults(html, i_userID || userID, ctx);
   return [ctx, defaultFuncs];
 }
-
-//fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg Between 48hr or less Automatically!
-let isFirstRun = true;
-
 // Read the data from the JSON file
 function getFbDtsgDataFromJson() {
     try {
@@ -268,35 +264,6 @@ function getFbDtsgDataFromJson() {
     }
 }
 
-function scheduleRefresh(api) {
-    const refreshAction = () => {
-        const fbDtsgData = getFbDtsgDataFromJson(); // Get data from JSON
-
-        if (fbDtsgData) {
-            // Pass the fb_dtsg and jazoest from the JSON to refreshFb_dtsg
-            api.refreshFb_dtsg(fbDtsgData)
-                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
-                .finally(scheduleNextRefresh);
-        } else {
-            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
-            scheduleNextRefresh();
-        }
-    };
-
-    if (isFirstRun) {
-        isFirstRun = false;
-        refreshAction();
-    } else {
-        scheduleNextRefresh();
-    }
-}
-
-function scheduleNextRefresh() {
-    setTimeout(() => {
-        refreshAction();
-    }, Math.random() * 172800000);  // Refresh within a random time, up to 48 hours
-}
 
 async function loginHelper(appState, email, password, globalOptions, callback) {
   const jar = utils.getJar();
@@ -383,7 +350,14 @@ async function loginHelper(appState, email, password, globalOptions, callback) {
     if (detectSuspension) throw detectSuspension;
 
     log.info("login", "Done logging in.");
-    scheduleRefresh(api);
+    const fbDtsgData = getFbDtsgDataFromJson();
+            if (fbDtsgData) {
+            api.refreshFb_dtsg(fbDtsgData)
+                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
+                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
+        } else {
+            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
+        }
     if (callback && typeof callback === 'function') {
       callback(null, api);
     } else {
