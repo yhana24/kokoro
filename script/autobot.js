@@ -27,7 +27,7 @@ if (!fs.existsSync(configPath)) {
   (config.weblink && config.port ? `${config.weblink}:${config.port}` : null) ||
   config.weblink ||
   (global.host.server[0] && global.host.port ? `${global.host.server[0]}:${global.host.port}` : null) ||
-  global.host.port;
+  global.host.server[0];
 
 
   const tin = txt =>

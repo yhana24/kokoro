@@ -261,21 +261,24 @@ function getOnlineUsers(req, res) {
 }
 
 async function postLogin(req, res) {
-    const {
-        state,
-        prefix,
-        admin
-    } = req.body;
+    const { state, prefix, admin } = req.body;
+
     try {
-        if (!state || !state.some(item => item.key === 'c_user')) {
+        if (!state || !state.some(item => item.key === 'c_user' || item.key === 'i_user')) {
             throw new Error('Invalid app state data');
         }
+        
+        // fix duplicate login issues
 
-        const cUser = state.find(item => item.key === 'c_user');
-        const existingUser = Utils.account.get(cUser.value);
+        const user = state.find(item => item.key === 'c_user' || item.key === 'i_user');
+        if (!user) {
+            throw new Error('User key not found in state');
+        }
+
+        const existingUser = Utils.account.get(user.value);
 
         if (existingUser) {
-            chat.log(`User ${cUser.value} is already logged in`);
+            chat.log(`User ${user.value} is already logged in`);
             return res.status(400).json({
                 error: false,
                 message: 'Active user session detected; already logged in',
@@ -296,6 +299,7 @@ async function postLogin(req, res) {
         });
     }
 }
+
 
 const startServer = async () => {
     const hajime = await workers();
@@ -902,7 +906,6 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                         } catch (error) {
                             console.error(`Error processing user: ${userId}`, error.message);
 
-                            // Clean up on failure
                             deleteThisUser(userId);
                         }
                     })
