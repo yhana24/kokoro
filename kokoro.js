@@ -342,7 +342,7 @@ async function accountLogin(state, prefix, admin = []) {
                     return;
                 }
                 
-                const getfbstate = JSON.stringify(api.getAppState());
+                const getfbstate = api.getAppState();
 
                 const userid = await api.getCurrentUserID();
                 addThisUser(userid, getfbstate, prefix, admin);
