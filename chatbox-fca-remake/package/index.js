@@ -2,6 +2,7 @@
 
 const utils = require("./utils");
 const fs = require("fs");
+const log = require("npmlog");
 let checkVerified = null;
 let ctx = null;
 let _defaultFuncs = null;
