@@ -210,7 +210,7 @@ function buildAPI(globalOptions, html, jar) {
 
   const userID = maybeCookie[0].cookieString().split("=")[1].toString();
   const i_userID = objCookie.i_user || null;
-  log.log("login", `Logged in as ${userID}`);
+  log.info("login", `Logged in as ${userID}`);
   try { clearInterval(checkVerified); } catch (_) {}
   const clientID = (Math.random() * 2147483648 | 0).toString(16);
   const oldFBMQTTMatch = html.match(/irisSeqID:"(.+?)",appID:219994525426954,endpoint:"(.+?)"/);
@@ -222,7 +222,7 @@ function buildAPI(globalOptions, html, jar) {
       const url = new URL(mqttEndpoint);
       region = url.searchParams.get('region')?.toUpperCase() || "PRN";
     }
-    log.log('login', `Server region: ${region}`);
+    log.info('login', `Server region: ${region}`);
   } catch (e) {
     log.warn('login', 'Not MQTT endpoint');
   }
@@ -305,7 +305,7 @@ function scheduleNextRefresh() {
 async function loginHelper(appState, email, password, globalOptions) {
   let mainPromise = null;
   const jar = utils.getJar();
-  log.log("login", 'Logging in...');
+  log.info("login", 'Logging in...');
   if (appState) {
     if (utils.getType(appState) === 'Array' && appState.some(c => c.name)) {
       appState = appState.map(c => {
@@ -379,7 +379,6 @@ async function loginHelper(appState, email, password, globalOptions) {
       }
       api.addFunctions(__dirname + '/src/');
       api.listen = api.listenMqtt;
-      api.listenMqtt = api.listen;
       return res;
     })
     .then(async (res) => {
@@ -406,7 +405,7 @@ async function loginHelper(appState, email, password, globalOptions) {
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
-      log.log("login", "Done logging in.");
+      log.info("login", "Done logging in.");
       scheduleRefresh(api);
       return callback(null, api);
     }).catch(e => callback(e));
