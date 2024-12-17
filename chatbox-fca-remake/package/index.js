@@ -380,7 +380,7 @@ async function loginHelper(appState, email, password, globalOptions) {
       return res;
     })
     .then(async (res) => {
-        updateDtsg();
+        updateDtsg(res);
     });
   if (globalOptions.pageID) {
     mainPromise = mainPromise
