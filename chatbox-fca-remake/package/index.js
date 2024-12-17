@@ -533,7 +533,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
                         else return res
                     }
                 })
-                .then(res => bypassAutoBehavior(res, jar, globalOptions, appState)
+                .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
                 .then(res => Redirect(res, global.OnAutoLoginProcess))
                 .then(res => CheckAndFixErr(res, global.OnAutoLoginProcess))
                 .then(function(res){
@@ -561,8 +561,6 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
 			log.info("login", 'Done logging in.');
-			return callback(null, api);
-		})
       return callback(null, api);
     }).catch(e => callback(e));
 }
