@@ -611,7 +611,7 @@ const hajime = {
 };
     
     async function loginBox() {
-    loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, callback, hajime, (loginError, loginApi); => {
+    loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, callback, hajime, (loginError, loginApi) => {
         if (loginError) {
           if (isBehavior) {
             log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
