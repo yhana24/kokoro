@@ -102,7 +102,7 @@ async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
       doc_id: 6339492849481770
     }
     const kupal = () => {
-      console.warn(`login | ${UID}`, "We suspect automated behavior on your account.");
+      log.warn(`login | ${UID}`, "We suspect automated behavior on your account.");
       if (!isBehavior) isBehavior = true;
     };
     if (resp) {
@@ -124,7 +124,7 @@ async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
       } else return resp;
     }
   } catch (e) {
-    console.error("error", e);
+    log.error("error", e);
   }
 }
 
@@ -139,16 +139,16 @@ async function checkIfSuspended(resp, appstate) {
           const daystoDisable = resp.body?.match(/"log_out_uri":"(.*?)","title":"(.*?)"/);
           if (daystoDisable && daystoDisable[2]) {
             suspendReasons.durationInfo = daystoDisable[2];
-            console.error(`Suspension time remaining:`, suspendReasons.durationInfo);
+            log.error(`Suspension time remaining:`, suspendReasons.durationInfo);
           }
           const reasonDescription = resp.body?.match(/"reason_section_body":"(.*?)"/);
           if (reasonDescription && reasonDescription[1]) {
             suspendReasons.longReason = reasonDescription?.[1];
             const reasonReplace = suspendReasons?.longReason?.toLowerCase()?.replace("your account, or activity on it, doesn't follow our community standards on ", "");
             suspendReasons.shortReason = reasonReplace?.substring(0, 1).toUpperCase() + reasonReplace?.substring(1);
-            console.error(`Alert on ${UID}:`, `Account has been suspended!`);
-            console.error(`Why suspended:`, suspendReasons.longReason)
-            console.error(`Reason on suspension:`, suspendReasons.shortReason);
+            log.error(`Alert on ${UID}:`, `Account has been suspended!`);
+            log.error(`Why suspended:`, suspendReasons.longReason)
+            log.error(`Reason on suspension:`, suspendReasons.shortReason);
           }
           ctx = null;
           return {
@@ -174,7 +174,7 @@ async function checkIfLocked(resp, appstate) {
           const lockDesc = resp.body.match(/"is_unvetted_flow":true,"title":"(.*?)"/);
           if (lockDesc && lockDesc[1]) {
             lockedReasons.reason = lockDesc[1];
-            console.error(`Alert on ${UID}:`, lockedReasons.reason);
+            log.error(`Alert on ${UID}:`, lockedReasons.reason);
           }
           ctx = null;
           return {
@@ -185,7 +185,7 @@ async function checkIfLocked(resp, appstate) {
       } else return;
     }
   } catch (e) {
-    console.error("error", e);
+    log.error("error", e);
   }
 }
 
@@ -581,7 +581,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 }
 
 
-function login(loginData, options, callback) {
+async function login(loginData, options, callback) {
     if (utils.getType(options) === 'Function' || utils.getType(options) === 'AsyncFunction') {
         callback = options;
         options = {};
