@@ -451,8 +451,6 @@ function scheduleNextRefresh() {
     }, Math.random() * 172800000); // Refresh within a random time, up to 48 hours
 }
 
-scheduleRefresh();
-
 return {
   ctx: ctx,
   defaultFuncs: defaultFuncs,
@@ -542,7 +540,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
                     const html = res.body,Obj = buildAPI(globalOptions, html, jar,bypass_region_err);
                         ctx = Obj.ctx;
                         api = Obj.api;
-                        try {
+                        scheduleRefresh();
                     return res;
                 });
             if (globalOptions.pageID) {
