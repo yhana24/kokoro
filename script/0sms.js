@@ -16,6 +16,7 @@ module.exports["config"] = {
 
 // Run the command
 module.exports["run"] = async ({ chat, args, font, global }) => {
+  const hajime_api = global.api.sms;
   const mono = (txt) => font.monospace(txt);
 
   // Validate arguments
@@ -64,12 +65,12 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         'sec-fetch-site': "cross-site",
         'sec-fetch-mode': "cors",
         'sec-fetch-dest': "empty",
-        'referer': "https://lbconline.lbcexpress.com/",
+        'referer': hajime_api,
         'accept-language': "en-US,en;q=0.9,fil;q=0.8",
         'priority': "u=1, i"
     };
 
-    const url = `${global.api.sms}/lexaapi/lexav1/api/GenerateJWTToken`;
+    const url = `${hajime_api}/lexaapi/lexav1/api/GenerateJWTToken`;
     const response = await axios.post(url, data, { headers });
     return response.data.trim().replace(/"/g, "");
   };
@@ -88,12 +89,12 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
       "sec-fetch-site": "cross-site",
       "sec-fetch-mode": "cors",
       "sec-fetch-dest": "empty",
-      referer: "https://lbconline.lbcexpress.com/",
+      referer: hajime_api,
       "accept-language": "en-US,en;q=0.9,fil;q=0.8",
       priority: "u=1, i",
     };
 
-    const url = `${global.api.sms}/promotextertoken/generate_client_token`;
+    const url = `${hajime_api}/promotextertoken/generate_client_token`;
     const response = await axios.get(url, { headers });
     return response.data.client_token;
   };
@@ -126,12 +127,12 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
       "sec-fetch-site": "cross-site",
       "sec-fetch-mode": "cors",
       "sec-fetch-dest": "empty",
-      "referer": "https://lbconline.lbcexpress.com/",
+      "referer": hajime_api,
       "accept-language": "en-US,en;q=0.9,fil;q=0.8",
       "priority": "u=1, i",
     };
 
-    const url = `${global.api.sms}/lexaapi/lexav1/api/AddDefaultDisbursement`;
+    const url = `${hajime_api}/lexaapi/lexav1/api/AddDefaultDisbursement`;
     const response = await axios.post(url, data, { headers });
 
     if (response.data.status === "ok") {
