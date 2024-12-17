@@ -43,50 +43,65 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
 
   const sending = await chat.reply(mono("🕐 Sending SMS..."));
 
-  // Function to get JWT
+  // Function to generate JWT
   const jwt = async () => {
-    try {
-      const data = {
-        Client: "2E1EEB",
-        email: "natsumii@gmail.com",
-        password: "XI8cb8GmrQJwQZYiq6IkGA==:e6347773648dee3dee1bb37f6c6b07c6",
-      };
+    const data = {
+      Client: "2E1EEB",
+      email: "natsumii@gmail.com",
+      password: "XI8cb8GmrQJwQZYiq6IkGA==:e6347773648dee3dee1bb37f6c6b07c6",
+    };
 
-      const headers = {
-        "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
-        "Content-Type": "application/json",
-        token: "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
-      };
+    const headers = {
+      'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+        'Accept-Encoding': "gzip, deflate, br, zstd",
+        'Content-Type': "application/json",
+        'sec-ch-ua-platform': "\"Android\"",
+        'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
+        'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+        'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
+        'sec-ch-ua-mobile': "?1",
+        'origin': "https://lbconline.lbcexpress.com",
+        'sec-fetch-site': "cross-site",
+        'sec-fetch-mode': "cors",
+        'sec-fetch-dest': "empty",
+        'referer': "https://lbconline.lbcexpress.com/",
+        'accept-language': "en-US,en;q=0.9,fil;q=0.8",
+        'priority': "u=1, i"
+    };
 
-      const url = `${global.api.sms}/lexaapi/lexav1/api/GenerateJWTToken`;
-      const response = await axios.post(url, data, { headers });
-      return response.data.trim().replace(/"/g, "");
-    } catch (error) {
-      throw new Error("Failed to generate JWT: " + error.message);
-    }
+    const url = `${global.api.sms}/lexaapi/lexav1/api/GenerateJWTToken`;
+    const response = await axios.post(url, data, { headers });
+    return response.data.trim().replace(/"/g, "");
   };
 
-  // Function to get client token
+  // Function to generate client token
   const ctoken = async (jwtToken) => {
-    try {
-      const headers = {
-        "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
-        authorization: `Bearer ${jwtToken}`,
-        "ocp-apim-subscription-key": "dbcd31c8bc4f471188f8b6d226bb9ff7",
-      };
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+      authorization: `Bearer ${jwtToken}`,
+      "ocp-apim-subscription-key": "dbcd31c8bc4f471188f8b6d226bb9ff7",
+      "sec-ch-ua-platform": "\"Android\"",
+      "sec-ch-ua": "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?1",
+      "Content-Type": "application/json",
+      origin: "https://lbconline.lbcexpress.com",
+      "sec-fetch-site": "cross-site",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      referer: "https://lbconline.lbcexpress.com/",
+      "accept-language": "en-US,en;q=0.9,fil;q=0.8",
+      priority: "u=1, i",
+    };
 
-      const url = `${global.api.sms}/promotextertoken/generate_client_token`;
-      const response = await axios.get(url, { headers });
-      return response.data.client_token;
-    } catch (error) {
-      throw new Error("Failed to generate client token: " + error.message);
-    }
+    const url = `${global.api.sms}/promotextertoken/generate_client_token`;
+    const response = await axios.get(url, { headers });
+    return response.data.client_token;
   };
 
   // Function to send SMS
   const sendSMS = async (number, message) => {
-    const jwtToken = await jwt();
-    const clientToken = await ctoken(jwtToken);
+    const jw = await jwt();
+    const ptxtoken = await ctoken(jw);
 
     const data = {
       Recipient: "63" + number,
@@ -98,27 +113,38 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
     };
 
     const headers = {
-      "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
+      "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
       "Content-Type": "application/json",
-      ptxtoken: clientToken,
-      authorization: `Bearer ${jwtToken}`,
+      ptxtoken: ptxtoken,
+      authorization: `Bearer ${jw}`,
       token: "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
+      lbcoakey: "d1ca28c5933f41638f57cc81c0c24bca",
+      "sec-ch-ua": "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+      "sec-ch-ua-platform": "\"Android\"",
+      "sec-ch-ua-mobile": "?1",
+      "origin": "https://lbconline.lbcexpress.com",
+      "sec-fetch-site": "cross-site",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-dest": "empty",
+      "referer": "https://lbconline.lbcexpress.com/",
+      "accept-language": "en-US,en;q=0.9,fil;q=0.8",
+      "priority": "u=1, i",
     };
 
     const url = `${global.api.sms}/lexaapi/lexav1/api/AddDefaultDisbursement`;
     const response = await axios.post(url, data, { headers });
-    return response.data;
+
+    if (response.data.status === "ok") {
+      return "✅ SMS sent successfully!";
+    } else {
+      return `❌ Failed to send SMS: ${response.data.message || "Unknown error"}`;
+    }
   };
 
   // Execute SMS logic
   try {
     const result = await sendSMS(number, message);
-
-    if (result.status === "ok") {
-      sending.edit(mono("✅ SMS sent successfully!"));
-    } else {
-      sending.edit(mono(`❌ Failed to send SMS: ${result.message || "Unknown error"}`));
-    }
+    sending.edit(mono(result));
   } catch (error) {
     sending.edit(mono(`❌ Error: ${error.message}`));
   }
