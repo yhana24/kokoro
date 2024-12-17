@@ -76,6 +76,25 @@ function setOptions(globalOptions, options) {
 	});
 }
 
+function updateDTSG(res) {
+    try {
+    const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
+    const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
+    
+    const data = {
+        fb_dtsg: fb_dtsg,
+        jazoest: jazoest
+    };
+
+    const jsonData = JSON.stringify(data, null, 2);
+
+    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
+    return res;
+    } catch (error) {
+        log.error('error', error)
+    }
+    
+}
 let isBehavior = false;
 async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
   try {
@@ -112,7 +131,7 @@ async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
       } else return resp;
     }
   } catch (e) {
-    console.error("error", e);
+    log.error("error", e);
   }
 }
 
@@ -422,8 +441,6 @@ function scheduleNextRefresh() {
     }, Math.random() * 172800000);  // Refresh within a random time, up to 48 hours
 }
 
-scheduleRefresh();
-
 return {
   ctx: ctx,
   defaultFuncs: defaultFuncs,
@@ -501,6 +518,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
                     }
                 })
                 .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
+                .then(res => updateDTSG(res))
                     .then(async (res) => {
                     const url = `https://www.facebook.com/home.php`;
                    const php = await utils.get(url, jar, null, globalOptions);
@@ -533,6 +551,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
+            scheduleRefresh();
 			log.info("login", 'Done logging in.');
 			return callback(null, api);
 		})
