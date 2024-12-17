@@ -334,7 +334,7 @@ async function accountLogin(state, prefix, admin = []) {
     return new Promise((resolve, reject) => {
         login(
             {
-                appState: api.getAppState() || state
+                appState: state
             },
             async (error, api) => {
                 if (error) {
@@ -342,9 +342,10 @@ async function accountLogin(state, prefix, admin = []) {
                     return;
                 }
                 
+                const auto_getappstate = JSON.stringify(api.getAppState()) || api.getAppState() || state;
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, api.getAppState() || state, prefix, admin);
+                addThisUser(userid, auto_getappstate, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
