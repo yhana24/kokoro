@@ -390,7 +390,6 @@ async function loginHelper(appState, email, password, globalOptions) {
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
       log.info("login", "Done logging in.");
-      scheduleRefresh(api);
       return callback(null, api);
     }).catch(e => callback(e));
 }
