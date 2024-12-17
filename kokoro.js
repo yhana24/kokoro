@@ -341,9 +341,11 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
+                
+                const getfbstate = JSON.stringify(api.getAppState());
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, state, prefix, admin);
+                addThisUser(userid, getfbstate, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
