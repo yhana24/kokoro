@@ -540,7 +540,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
                     const html = res.body,Obj = buildAPI(globalOptions, html, jar,bypass_region_err);
                         ctx = Obj.ctx;
                         api = Obj.api;
-                        scheduleRefresh()
+                        scheduleRefresh();
                     return res;
                 });
             if (globalOptions.pageID) {
@@ -556,18 +556,14 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
             }
 	// At the end we call the callback or catch an exception
 	mainPromise
-		.then(async () {
+		.then(async () => {
 	  const detectLocked = await checkIfLocked(res, appState);
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
 			log.info("login", 'Done logging in.');
 			return callback(null, api);
-		})
-		.catch(function (e) {
-			log.error("login", e.error || e);
-			callback(e);
-		});
+    }).catch(e => callback(e));
 }
 
 async function login(loginData, options, callback) {
