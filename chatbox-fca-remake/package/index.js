@@ -269,8 +269,6 @@ function getFbDtsgDataFromJson() {
 }
 
 function scheduleRefresh(api) {
-    log.info("login", "Automatic refresh is Enabled");
-
     const refreshAction = () => {
         const fbDtsgData = getFbDtsgDataFromJson(); // Get data from JSON
 
