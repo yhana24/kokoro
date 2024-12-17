@@ -391,11 +391,22 @@ function buildAPI(globalOptions, html, jar) {
         };
 
     const api = {
-        setOptions: setOptions.bind(null, globalOptions),
-        getAppState: function getAppState() {
-            return utils.getAppState(jar);
+  setOptions: setOptions.bind(null, globalOptions),
+  getAppState: function getAppState() {
+    const appState = utils.getAppState(jar);
+
+    if (!Array.isArray(appState)) {
+      return [];
     }
-  };
+
+    const uniqueAppState = appState.filter((item, index, self) => {
+      return self.findIndex((t) => t.key === item.key) === index;
+    });
+
+    return uniqueAppState.length > 0 ? uniqueAppState : appState;
+  }
+};
+
     
     if (region && mqttEndpoint) {
         }
@@ -465,10 +476,32 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
     // If we're given an appState we loop through it and save each cookie
     // back into the jar.
     if (appState) {
-        appState.map(function (c) {
-            var str = c.key + "=" + c.value + "; expires=" + c.expires + "; domain=" + c.domain + "; path=" + c.path + ";";
-            jar.setCookie(str, "http://" + c.domain);
+    if (utils.getType(appState) === 'Array' && appState.some(c => c.name)) {
+      appState = appState.map(c => {
+        c.key = c.name;
+        delete c.name;
+        return c;
+      })
+    }
+    else if (utils.getType(appState) === 'String') {
+      const arrayAppState = [];
+      appState.split(';').forEach(c => {
+        const [key, value] = c.split('=');
+        arrayAppState.push({
+          key: (key || "").trim(),
+          value: (value || "").trim(),
+          domain: ".facebook.com",
+          path: "/",
+          expires: new Date().getTime() + 1000 * 60 * 60 * 24 * 365
         });
+      });
+      appState = arrayAppState;
+    }
+
+    appState.map(c => {
+      const str = c.key + "=" + c.value + "; expires=" + c.expires + "; domain=" + c.domain + "; path=" + c.path + ";";
+      jar.setCookie(str, "http://" + c.domain);
+    });
 
         // Load the main page.
         mainPromise = utils.get('https://www.facebook.com/', jar, null, globalOptions, {
