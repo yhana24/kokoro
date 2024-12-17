@@ -3,7 +3,7 @@ const axios = require('axios');
 
 module.exports["config"] = {
   name: "omni",
-  aliases: ["omini"],
+  aliases: ["omini", "ai"],
   isPrefix: false,
   version: "1.0.0",
   credits: "Kenneth Panio",
