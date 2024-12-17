@@ -349,7 +349,7 @@ async function loginHelper(appState, email, password, globalOptions) {
 
   mainPromise = mainPromise
     .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
-    .then(async (res => updateDtsg(res));
+    .then(async (res => updateDtsg(res))
     .then(async (res) => {
       const url = `https://www.facebook.com/home.php`;
       const php = await utils.get(url, jar, null, globalOptions);
