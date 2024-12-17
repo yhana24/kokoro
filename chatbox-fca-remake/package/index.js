@@ -346,14 +346,17 @@ async function loginHelper(appState, email, password, globalOptions) {
     }
   }
 
-  api = {
+  const api = {
     setOptions: setOptions.bind(null, globalOptions),
     getAppState() {
-      const appState = utils.getAppState(jar);
-      return appState.filter((item, index, self) => self.findIndex((t) => { return t.key === item.key }) === index);
-    } || return utils.getAppState(jar);
+        const appState = utils.getAppState(jar);
+        const filteredState = appState.filter((item, index, self) => 
+            self.findIndex((t) => t.key === item.key) === index
+        );
+        return filteredState.length > 0 ? filteredState : appState;
     }
-  }
+};
+
 
 
   mainPromise = mainPromise
