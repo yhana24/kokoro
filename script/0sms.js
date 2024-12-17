@@ -41,6 +41,8 @@ module.exports["run"] = async ({
         chat.reply(mono("❗ Invalid PH phone number. Must be 10 digits starting with 09."));
         return;
     }
+    
+    chat.reply(mono("SENDING SMS..."))
 
 
     try {
@@ -141,12 +143,12 @@ module.exports["run"] = async ({
         };
 
         if (response.data.status === "ok") {
-            sending.edit(mono(result));
+            sending.edit(mono("SUCCESSFULLY SENT SMS✓"));
         } else {
-            sending.edit(mono("failed to sent SMS!"));
+            sending.edit(mono("FAILED TO SEND SMS!"));
         }
 
     } catch (error) {
-        sending.edit(mono(`❌ Error: ${error.message}`));
+        sending.edit(mono(`❌ ERROR: ${error.message}`));
     }
 };
