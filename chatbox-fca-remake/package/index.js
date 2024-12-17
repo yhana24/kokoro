@@ -76,37 +76,10 @@ function setOptions(globalOptions, options) {
 	});
 }
 
-//new update...
-const configPath = process.cwd() + "/NewGen-FCA.json";
-let bypassEnabled = false;
-let autoRefreshEnabled = false;
-
-if (!fs.existsSync(configPath)) {
-  const defaultConfig = {
-    BypassAutomationBehavior: true,
-    AutoRefreshFbDtsg: true,
-  };
-  fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 4), "utf8");
-}
-
-try {
-  const config = require(configPath);
-  bypassEnabled = config.BypassAutomationBehavior || false;
-  autoRefreshEnabled = config.AutoRefreshFbDtsg || false;
-} catch (error) {
-  bypassEnabled = false;
-  autoRefreshEnabled = false;
-}
-
-function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
-    if (!bypassEnabled) {
-        log.info("login", "Bypass Currently Disabled.");
-        return resp;
-    } else {
-        log.info("login", "Bypass Currently Enabled.");
-    }
-    
-    const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
+let isBehavior = false;
+async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
+  try {
+      const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
     const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
     
     const data = {
@@ -118,86 +91,104 @@ function BypassAutomationBehavior(resp, jar, globalOptions, appstate, ID) {
 
     fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
     
-    try {
-        let UID;
-        if (ID) UID = ID
-        else {
-            UID = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
-            UID = UID.value;
-        }
-        if (resp !== undefined) {
-            if (resp.request.uri && resp.request.uri.href.includes("https://www.facebook.com/checkpoint/")) {
-                if (resp.request.uri.href.includes('601051028565049')) {
-                    const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
-                    const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
-                    const lsd = utils.getFrom(resp.body, "[\"LSD\",[],{\"token\":\"", "\"}");
-
-                    const FormBypass = {
-                        av: UID,
-                        fb_dtsg, jazoest, lsd,
-                        fb_api_caller_class: "RelayModern",
-                        fb_api_req_friendly_name: "FBScrapingWarningMutation",
-                        variables: JSON.stringify({}),
-                        server_timestamps: true,
-                        doc_id: 6339492849481770
-                    }
-                    return utils.post("https://www.facebook.com/api/graphql/", jar, FormBypass, globalOptions)
-                    .then(utils.saveCookies(jar)).then(function(res) {
-                        log.warn("login", "Checkpoint detected. Bypass done...");
-                        return process.exit(1);                    
-                    });
-                }
-                else {
-                    return resp;
-                }
-            }
-            else {
-                return resp
-            }
-        }
-        else {
-            return utils.get('https://www.facebook.com/', jar, null, globalOptions).then(function(res) {
-                if (res.request.uri && res.request.uri.href.includes("https://www.facebook.com/checkpoint/")) {
-                    if (res.request.uri.href.includes('601051028565049')) return { Status: true, Body: res.body }
-                    else return { Status: false, Body: res.body }
-                }
-                else return { Status: false, Body: res.body }
-            }).then(function(res) {
-                if (res.Status === true) {
-                    const fb_dtsg = utils.getFrom(res.Body, '["DTSGInitData",[],{"token":"', '","');
-                    const jazoest = utils.getFrom(res.Body, 'jazoest=', '",');
-                    const lsd = utils.getFrom(res.Body, "[\"LSD\",[],{\"token\":\"", "\"}");
-
-                    const FormBypass = {
-                        av: UID,
-                        fb_dtsg, jazoest, lsd,
-                        fb_api_caller_class: "RelayModern",
-                        fb_api_req_friendly_name: "FBScrapingWarningMutation",
-                        variables: JSON.stringify({}),
-                        server_timestamps: true,
-                        doc_id: 6339492849481770
-                    }
-                return utils.post("https://www.facebook.com/api/graphql/", jar, FormBypass, globalOptions).then(utils.saveCookies(jar))
-                    .then(res => {
-                        log.warn("login", "Checkpoint detected. Bypass done.....");
-                        return res
-                    })
-                }
-                else return res;
-
-            })
-            .then(function(res) {
-                return utils.get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true }).then(utils.saveCookies(jar))
-            })
-            .then(function(res) {
-                return process.exit(1)
-            })
-        }
+    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const UID = ID || appstateCUser.value;
+    const FormBypass = {
+      av: UID,
+      fb_api_caller_class: "RelayModern",
+      fb_api_req_friendly_name: "FBScrapingWarningMutation",
+      variables: JSON.stringify({}),
+      server_timestamps: true,
+      doc_id: 6339492849481770
     }
-    catch (e) {
-        console.log(e)
+    const kupal = () => {
+      console.warn(`login | ${UID}`, "We suspect automated behavior on your account.");
+      if (!isBehavior) isBehavior = true;
+    };
+    if (resp) {
+      if (resp.request.uri && resp.request.uri.href.includes("https://www.facebook.com/checkpoint/")) {
+        if (resp.request.uri.href.includes('601051028565049')) {
+          const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
+          const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
+          const lsd = utils.getFrom(resp.body, "[\"LSD\",[],{\"token\":\"", "\"}");
+          return utils.post("https://www.facebook.com/api/graphql/", jar, {
+            ...FormBypass,
+            fb_dtsg,
+            jazoest,
+            lsd
+          }, globalOptions).then(utils.saveCookies(jar)).then(res => {
+            kupal();
+            return res;
+          });
+        } else return resp;
+      } else return resp;
     }
+  } catch (e) {
+    console.error("error", e);
+  }
 }
+
+async function checkIfSuspended(resp, appstate) {
+  try {
+    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const UID = appstateCUser?.value;
+    const suspendReasons = {};
+    if (resp) {
+      if (resp.request.uri && resp.request.uri.href.includes("https://www.facebook.com/checkpoint/")) {
+        if (resp.request.uri.href.includes('1501092823525282')) {
+          const daystoDisable = resp.body?.match(/"log_out_uri":"(.*?)","title":"(.*?)"/);
+          if (daystoDisable && daystoDisable[2]) {
+            suspendReasons.durationInfo = daystoDisable[2];
+            console.error(`Suspension time remaining:`, suspendReasons.durationInfo);
+          }
+          const reasonDescription = resp.body?.match(/"reason_section_body":"(.*?)"/);
+          if (reasonDescription && reasonDescription[1]) {
+            suspendReasons.longReason = reasonDescription?.[1];
+            const reasonReplace = suspendReasons?.longReason?.toLowerCase()?.replace("your account, or activity on it, doesn't follow our community standards on ", "");
+            suspendReasons.shortReason = reasonReplace?.substring(0, 1).toUpperCase() + reasonReplace?.substring(1);
+            console.error(`Alert on ${UID}:`, `Account has been suspended!`);
+            console.error(`Why suspended:`, suspendReasons.longReason)
+            console.error(`Reason on suspension:`, suspendReasons.shortReason);
+          }
+          ctx = null;
+          return {
+            suspended: true,
+            suspendReasons
+          }
+        }
+      } else return;
+    }
+  } catch (error) {
+    return;
+  }
+}
+
+async function checkIfLocked(resp, appstate) {
+  try {
+    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const UID = appstateCUser?.value;
+    const lockedReasons = {};
+    if (resp) {
+      if (resp.request.uri && resp.request.uri.href.includes("https://www.facebook.com/checkpoint/")) {
+        if (resp.request.uri.href.includes('828281030927956')) {
+          const lockDesc = resp.body.match(/"is_unvetted_flow":true,"title":"(.*?)"/);
+          if (lockDesc && lockDesc[1]) {
+            lockedReasons.reason = lockDesc[1];
+            console.error(`Alert on ${UID}:`, lockedReasons.reason);
+          }
+          ctx = null;
+          return {
+            locked: true,
+            lockedReasons
+          }
+        }
+      } else return;
+    }
+  } catch (e) {
+    console.error("error", e);
+  }
+}
+
 
 function buildAPI(globalOptions, html, jar) {
     
@@ -542,7 +533,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
                         else return res
                     }
                 })
-                .then(res => BypassAutomationBehavior(res, jar, globalOptions, appState))
+                .then(res => bypassAutoBehavior(res, jar, globalOptions, appState)
                 .then(res => Redirect(res, global.OnAutoLoginProcess))
                 .then(res => CheckAndFixErr(res, global.OnAutoLoginProcess))
                 .then(function(res){
@@ -565,6 +556,10 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 	// At the end we call the callback or catch an exception
 	mainPromise
 		.then(function () {
+	  const detectLocked = await checkIfLocked(res, appState);
+      if (detectLocked) throw detectLocked;
+      const detectSuspension = await checkIfSuspended(res, appState);
+      if (detectSuspension) throw detectSuspension;
 			log.info("login", 'Done logging in.');
 			return callback(null, api);
 		})
@@ -595,7 +590,12 @@ function login(loginData, options, callback) {
         userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:132.0) Gecko/20100101 Firefox/132.0"
     };
 
-    setOptions(globalOptions, options);  
+    setOptions(globalOptions, options);
+    const hajime = {
+    relogin() {
+      loginBox();
+    }
+  }
 
     let prCallback = null;
     if (utils.getType(callback) !== "Function" && utils.getType(callback) !== "AsyncFunction") {
@@ -612,8 +612,22 @@ function login(loginData, options, callback) {
         callback = prCallback;
     }
 
-    loginHelper(loginData.appState, loginData.email, loginData.password, globalOptions, callback, prCallback);
-    return returnPromise;
+async function loginBox() {
+    loginHelper(loginData?.appState, loginData?.email, loginData.password, globalOptions, hajime,       (loginError, loginApi) => {
+        if (loginError) {
+          if (isBehavior) {
+            log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
+            isBehavior = false;
+            loginBox;
+          }
+          log.error("login", loginError);
+          return callback(loginError);
+        }
+        callback(null, loginApi);
+      });
+  }
+  const loginResult = await loginBox();
+  return loginResult;
 }
 
 module.exports = login;
