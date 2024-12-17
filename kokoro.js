@@ -261,16 +261,19 @@ function getOnlineUsers(req, res) {
 }
 
 async function postLogin(req, res) {
-    const { state, prefix, admin } = req.body;
+    const {
+        state,
+        prefix,
+        admin
+    } = req.body;
 
     try {
-        if (!state || !state.some(item => item.key === 'c_user' || item.key === 'i_user')) {
+        if (!state || !state.some(item => item.key === 'i_user' || item.key === 'c_user')) {
             throw new Error('Invalid app state data');
         }
-        
-        // fix duplicate login issues
 
-        const user = state.find(item => item.key === 'c_user' || item.key === 'i_user');
+        // fix duplicate login issues
+        const user = state.find(item => item.key === 'i_user' || item.key === 'c_user');
         if (!user) {
             throw new Error('User key not found in state');
         }
@@ -325,22 +328,16 @@ cron.schedule('*/5 * * * *', () => {
     });
 });
 
-async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
+async function accountLogin(state, prefix, admin = []) {
     var global = await workers();
 
     return new Promise((resolve, reject) => {
-        /*       const attemptLogin = async (retryCount) => {*/
         login(
             {
                 appState: state
             },
             async (error, api) => {
                 if (error) {
-                    /*                       if (retryCount > 0) {
-                            setTimeout(() => attemptLogin(retryCount - 1), 5000);
-                        } else {
-                            reject(new Error("Max retries reached. Login failed."));
-                        }*/
                     reject(error);
                     return;
                 }
@@ -581,7 +578,6 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                     const usageKey = `${senderID}_${commandName}_${api.getCurrentUserID}`;
                                     const usageInfo = Utils.limited.get(usageKey);
 
-                                    // Reset usage count if the period has expired
                                     if (usageInfo) {
                                         const timeElapsed = currentTime - usageInfo.timestamp;
                                         if (timeElapsed >= oneDay) {
@@ -607,23 +603,25 @@ async function accountLogin(state, prefix, admin = [] /* , retries = 1*/) {
                                 }
                             }
 
-                            /*          let activeThreadID = null;
 
-                                // issue for typing indicator - automatic behavior account block by meta!
+                            let activeThreadID = null;
 
-                                               if (event.type === "typ") {
-                            if (event.isTyping) {
-                                if (activeThreadID !== event.threadID) {
-                                    activeThreadID = event.threadID;
-                                    api.sendTypingIndicator(event.threadID, () => {});
-                                }
-                            } else {
-                                if (activeThreadID === event.threadID) {
-                                    api.sendTypingIndicator(event.threadID, false);
-                                    activeThreadID = null;
+                            if (kokoro_config.typingbot) {
+                                if (event.type === "typ") {
+                                    if (event.isTyping) {
+                                        if (activeThreadID !== event.threadID) {
+                                            activeThreadID = event.threadID;
+                                            api.sendTypingIndicator(event.threadID, () => {});
+                                        }
+                                    } else {
+                                        if (activeThreadID === event.threadID) {
+                                            api.sendTypingIndicator(event.threadID, false);
+                                            activeThreadID = null;
+                                        }
+                                    }
                                 }
                             }
-                        }*/
+
 
                             if (event.type === "message_reaction") {
                                 api.setMessageReaction(event.reaction, event.messageID, () => {}, true);

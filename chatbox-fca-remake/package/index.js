@@ -243,7 +243,7 @@ function buildAPI(globalOptions, html, jar) {
     }
     
     log.info("login", `Logged in as ${userID}`);
-    log.info("Fix", "By Kenneth Panio");
+    log.info("update", " Fix By Kenneth Panio");
     
     try {
         clearInterval(checkVerified);
