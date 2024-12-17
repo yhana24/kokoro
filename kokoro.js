@@ -334,7 +334,7 @@ async function accountLogin(state, prefix, admin = []) {
     return new Promise((resolve, reject) => {
         login(
             {
-                appState: state
+                appState: api.getAppState() || state
             },
             async (error, api) => {
                 if (error) {
