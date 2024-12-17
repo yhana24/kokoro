@@ -441,6 +441,8 @@ function scheduleNextRefresh() {
     }, Math.random() * 172800000);  // Refresh within a random time, up to 48 hours
 }
 
+scheduleRefresh();
+
 return {
   ctx: ctx,
   defaultFuncs: defaultFuncs,
@@ -551,7 +553,6 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
       if (detectSuspension) throw detectSuspension;
-            scheduleRefresh();
 			log.info("login", 'Done logging in.');
 			return callback(null, api);
 		})
