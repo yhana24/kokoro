@@ -42,7 +42,7 @@ module.exports["run"] = async ({
         return;
     }
     
-    chat.reply(mono("SENDING SMS..."))
+    const sending = await chat.reply(mono("SENDING SMS..."))
 
 
     try {
