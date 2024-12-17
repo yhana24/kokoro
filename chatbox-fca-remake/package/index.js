@@ -465,105 +465,121 @@ return {
 }
 
 // unfortunately login via credentials no longer works,so instead of login via credentials, use login via appstate intead.
-function loginHelper(appState, email, password, globalOptions, callback, prCallback ) {
+function loginHelper(appState, email, password, globalOptions, callback, prCallback) {
     let mainPromise = null;
     const jar = utils.getJar();
 
-    // If we're given an appState we loop through it and save each cookie
-    // back into the jar.
+    // If appState is provided, set cookies in the jar.
     if (appState) {
-        appState.map(function (c) {
-            var str = c.key + "=" + c.value + "; expires=" + c.expires + "; domain=" + c.domain + "; path=" + c.path + ";";
-            jar.setCookie(str, "http://" + c.domain);
+        appState.forEach(function (c) {
+            const str = `${c.key}=${c.value}; expires=${c.expires}; domain=${c.domain}; path=${c.path};`;
+            jar.setCookie(str, `http://${c.domain}`);
         });
 
         // Load the main page.
-        mainPromise = utils.get('https://www.facebook.com/', jar, null, globalOptions, {
-            noRef: true })          
-.then(utils.saveCookies(jar));
-	} else {
-		if (email) {
-			throw { error: "Unfortunately login via credentials is no longer work, please use login via appstate instead." };
-		}
-		else {
-			throw { error: "Please provide appstate." };
-		}
-	}
-    
-    function CheckAndFixErr(res, fastSwitch) {
+        mainPromise = utils.get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true })
+            .then(() => utils.saveCookies(jar));
+    } else {
+        if (email) {
+            throw new Error("Login via credentials is no longer supported. Please use login via appState.");
+        } else {
+            throw new Error("Please provide appState.");
+        }
+    }
+
+    function checkAndFixError(res, fastSwitch) {
         if (fastSwitch) return res;
-            let reg_antierr = /7431627028261359627/gs; // :>
-            if (reg_antierr.test(res.body)) {
-                const Data = JSON.stringify(res.body);
-                const Dt_Check = Data.split('2Fhome.php&amp;gfid=')[1];
-                if (Dt_Check == undefined) return res
-                const fid = Dt_Check.split("\\\\")[0];//fix
-                if (Dt_Check == undefined || Dt_Check == "") return res
-                const final_fid = fid.split(`\\`)[0];
-                if (final_fid == undefined || final_fid == '') return res;
-                const redirectlink = redirect[1] + "a/preferences.php?basic_site_devices=m_basic&uri=" + encodeURIComponent("https://m.facebook.com/home.php") + "&gfid=" + final_fid;
-                bypass_region_err = true;
-                return utils.get(redirectlink, jar, null, globalOptions).then(utils.saveCookies(jar));
-            }
-            else return res
+
+        const antiErrorRegex = /7431627028261359627/gs;
+        if (antiErrorRegex.test(res.body)) {
+            const data = JSON.stringify(res.body);
+            const gfidData = data.split('2Fhome.php&amp;gfid=')[1];
+            if (!gfidData) return res;
+
+            const fid = gfidData.split("\\\\")[0];
+            if (!fid) return res;
+
+            const finalFid = fid.split(`\\`)[0];
+            if (!finalFid) return res;
+
+            const redirectLink = redirect[1] + 
+                `a/preferences.php?basic_site_devices=m_basic&uri=${encodeURIComponent("https://m.facebook.com/home.php")}&gfid=${finalFid}`;
+            bypassRegionError = true;
+
+            return utils.get(redirectLink, jar, null, globalOptions).then(() => utils.saveCookies(jar));
         }
 
-	    function Redirect(res,fastSwitch) {
-    if (fastSwitch) return res;
-        var reg = /<meta http-equiv="refresh" content="0;url=([^"]+)[^>]+>/;
-        redirect = reg.exec(res.body);
-            if (redirect && redirect[1]) return utils.get(redirect[1], jar, null, globalOptions)
+        return res;
+    }
+
+    function handleRedirect(res, fastSwitch) {
+        if (fastSwitch) return res;
+
+        const redirectRegex = /<meta http-equiv="refresh" content="0;url=([^"]+)[^>]+>/;
+        const redirectMatch = redirectRegex.exec(res.body);
+        if (redirectMatch && redirectMatch[1]) {
+            return utils.get(redirectMatch[1], jar, null, globalOptions);
+        }
+
         return res;
     }
 
     let redirect = [1, "https://m.facebook.com/"];
-    let bypass_region_err = false;
-        var ctx,api;
-            mainPromise = mainPromise
-                .then(res => Redirect(res))
-                .then(res => CheckAndFixErr(res))
-                //fix via login with defaut UA return WWW.facebook.com not m.facebook.com
-                .then(function(res) {
-                    if (global.OnAutoLoginProcess) return res;
-                    else {
-                        let Regex_Via = /MPageLoadClientMetrics/gs; //default for normal account, can easily get region, without this u can't get region in some case but u can run normal
-                        if (!Regex_Via.test(res.body)) {
-                            return utils.get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true })
-                        }
-                        else return res
-                    }
-                })
-                .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
-                .then(res => Redirect(res, global.OnAutoLoginProcess))
-                .then(res => CheckAndFixErr(res, global.OnAutoLoginProcess))
-                .then(function(res){
-                    const html = res.body,Obj = buildAPI(globalOptions, html, jar,bypass_region_err);
-                        ctx = Obj.ctx;
-                        api = Obj.api;
-                    return res;
-                });
-            if (globalOptions.pageID) {
-                mainPromise = mainPromise
-                    .then(function() {
-                        return utils.get('https://www.facebook.com/' + ctx.globalOptions.pageID + '/messages/?section=messages&subsection=inbox', ctx.jar, null, globalOptions);
-                    })
-                    .then(function(resData) {
-                        const url = utils.getFrom(resData.body, 'window.location.replace("https:\\/\\/www.facebook.com\\', '");').split('\\').join('');
-                        url = url.substring(0, url.length - 1);
-                        return utils.get('https://www.facebook.com' + url, ctx.jar, null, globalOptions);
-                    });
+    let bypassRegionError = false;
+    let ctx, api;
+
+    mainPromise = mainPromise
+        .then(res => handleRedirect(res))
+        .then(res => checkAndFixError(res))
+        .then(res => {
+            if (global.OnAutoLoginProcess) return res;
+
+            const regexVia = /MPageLoadClientMetrics/gs;
+            if (!regexVia.test(res.body)) {
+                return utils.get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true });
             }
-	// At the end we call the callback or catch an exception
-	mainPromise
-		.then(async (res) {
-	  const detectLocked = await checkIfLocked(res, appState);
-      if (detectLocked) throw detectLocked;
-      const detectSuspension = await checkIfSuspended(res, appState);
-      if (detectSuspension) throw detectSuspension;
-			log.info("login", 'Done logging in.');
-      return callback(null, api);
-    }).catch(e => callback(e));
+
+            return res;
+        })
+        .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
+        .then(res => handleRedirect(res, global.OnAutoLoginProcess))
+        .then(res => checkAndFixError(res, global.OnAutoLoginProcess))
+        .then(res => {
+            const html = res.body;
+            const obj = buildAPI(globalOptions, html, jar, bypassRegionError);
+            ctx = obj.ctx;
+            api = obj.api;
+            return res;
+        });
+
+    if (globalOptions.pageID) {
+        mainPromise = mainPromise
+            .then(() => utils.get(
+                `https://www.facebook.com/${ctx.globalOptions.pageID}/messages/?section=messages&subsection=inbox`,
+                ctx.jar, null, globalOptions
+            ))
+            .then(resData => {
+                let url = utils.getFrom(resData.body, 'window.location.replace("https:\\/\\/www.facebook.com\\', '");').split('\\').join('');
+                url = url.slice(0, -1);
+                return utils.get(`https://www.facebook.com${url}`, ctx.jar, null, globalOptions);
+            });
+    }
+
+    // Final callback or error handling
+    mainPromise
+        .then(async res => {
+            const detectLocked = await checkIfLocked(res, appState);
+            if (detectLocked) throw detectLocked;
+
+            const detectSuspended = await checkIfSuspended(res, appState);
+            if (detectSuspended) throw detectSuspended;
+
+            log.info("login", "Done logging in.");
+            return callback(null, api);
+        })
+        .catch(err => callback(err));
 }
+
 
 function login(loginData, options, callback) {
     if (utils.getType(options) === 'Function' || utils.getType(options) === 'AsyncFunction') {
