@@ -90,7 +90,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         'sec-fetch-site': "cross-site",
         'sec-fetch-mode': "cors",
         'sec-fetch-dest': "empty",
-        'referer': hajime_api,
+        'referer': hajime_api + "/",
         'accept-language': "en-US,en;q=0.9,fil;q=0.8",
         'priority': "u=1, i"
     });
