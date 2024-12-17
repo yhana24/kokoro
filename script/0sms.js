@@ -69,6 +69,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
     const ctoken = async (jwtToken) => {
         const headers = {
             ...commonHeaders(),
+            'ocp-apim-subscription-key': "dbcd31c8bc4f471188f8b6d226bb9ff7",
             'User-Agent': getRandomUserAgent(),
             'authorization': `Bearer ${jwtToken}`,
         };
