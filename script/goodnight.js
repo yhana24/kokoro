@@ -8,7 +8,9 @@ module.exports["config"] = {
   cd: 5, 
 };
 module.exports.handleEvent = async function ({ event, chat, api }) {
-  const { body } = event;
+ // const { body } = event; tangina mag spam bot mo nito
+ 
+ const body = event.body ? event.body.split(' ')[0] : '';// ganito dapat
  // var id = event.senderID
 //  var name = await chat.userName(id);;
   const mark = (marky) => body?.toLowerCase().startsWith(marky);

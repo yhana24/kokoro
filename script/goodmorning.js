@@ -1,5 +1,5 @@
 module.exports["config"] = {
-  name: "googdmorning",
+  name: "goodmorning",
   version: "1.0.1",
   role: 0,
   credits: "Markdevs69", 
@@ -8,7 +8,7 @@ module.exports["config"] = {
   cd: 5, 
 };
 module.exports.handleEvent = async function ({ event, chat, api }) {
-  const { body } = event;
+  const body = event.body ? event.body.split(' ')[0] : '';
  // var id = event.senderID
  // var name = await chat.userName(id);
   const mark = (marky) => body?.toLowerCase().startsWith(marky);
