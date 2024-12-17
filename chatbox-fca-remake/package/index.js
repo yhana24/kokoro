@@ -68,21 +68,22 @@ async function setOptions(globalOptions, options = {}) {
 }
 
 async function updateDtsg(resp) {
-    
     try {
-     const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
-    const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
-    
-    const data = {
-        fb_dtsg: fb_dtsg,
-        jazoest: jazoest
-    };
+        const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
+        const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
+        
+        const data = {
+            fb_dtsg: fb_dtsg,
+            jazoest: jazoest
+        };
 
-    const jsonData = JSON.stringify(data, null, 2);
-
-    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
+        const jsonData = JSON.stringify(data, null, 2);
+        fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
+        
+        return data;
     } catch (e) {
         log.error("dtsg_error_update", e);
+        return { error: "Failed to update DTSG" };
     }
 }
 
@@ -253,7 +254,7 @@ function buildAPI(globalOptions, html, jar) {
   const defaultFuncs = utils.makeDefaults(html, i_userID || userID, ctx);
   return [ctx, defaultFuncs];
 }
-// Read the data from the JSON file
+
 function getFbDtsgDataFromJson() {
     try {
         const data = fs.readFileSync('fb_dtsg_data.json', 'utf8');
@@ -264,114 +265,135 @@ function getFbDtsgDataFromJson() {
     }
 }
 
+function scheduleRefresh(api) {
 
-async function loginHelper(appState, email, password, globalOptions, callback) {
+    const refreshAction = () => {
+        const fbDtsgData = getFbDtsgDataFromJson();
+
+        if (fbDtsgData) {
+            api.refreshFb_dtsg(fbDtsgData)
+                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
+                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
+                .finally(scheduleNextRefresh);
+        } else {
+            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
+            scheduleNextRefresh();
+        }
+    };
+
+    if (isFirstRun) {
+        isFirstRun = false;
+        refreshAction();
+    } else {
+        scheduleNextRefresh();
+    }
+}
+
+async function loginHelper(appState, email, password, globalOptions) {
+  let mainPromise = null;
   const jar = utils.getJar();
   log.info("login", 'Logging in...');
-  
   if (appState) {
-    // Handling appState as Array or String
     if (utils.getType(appState) === 'Array' && appState.some(c => c.name)) {
       appState = appState.map(c => {
         c.key = c.name;
         delete c.name;
         return c;
-      });
-    } else if (utils.getType(appState) === 'String') {
-      const arrayAppState = appState.split(';').map(c => {
+      })
+    }
+    else if (utils.getType(appState) === 'String') {
+      const arrayAppState = [];
+      appState.split(';').forEach(c => {
         const [key, value] = c.split('=');
-        return {
+        arrayAppState.push({
           key: (key || "").trim(),
           value: (value || "").trim(),
           domain: ".facebook.com",
           path: "/",
           expires: new Date().getTime() + 1000 * 60 * 60 * 24 * 365
-        };
+        });
       });
       appState = arrayAppState;
     }
 
-    // Set cookies in the jar
-    appState.forEach(c => {
-      const str = `${c.key}=${c.value}; expires=${c.expires}; domain=${c.domain}; path=${c.path};`;
-      jar.setCookie(str, `http://${c.domain}`);
+    appState.map(c => {
+      const str = c.key + "=" + c.value + "; expires=" + c.expires + "; domain=" + c.domain + "; path=" + c.path + ";";
+      jar.setCookie(str, "http://" + c.domain);
     });
 
-    // Load the main page
-    try {
-      await utils.get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true });
-      utils.saveCookies(jar);
-    } catch (error) {
-      throw new Error('Error loading Facebook main page: ' + error.message);
-    }
+    // Load the main page.
+    mainPromise = utils
+      .get('https://www.facebook.com/', jar, null, globalOptions, { noRef: true })
+      .then(utils.saveCookies(jar));
   } else {
     if (email) {
-      throw new Error("Currently, the login method by email and password is no longer supported. Please use the login method by appState.");
-    } else {
-      throw new Error("No appState given.");
+      throw "Currently, the login method by email and password is no longer supported, please use the login method by appState";
+    }
+    else {
+      throw "No appState given.";
     }
   }
 
   const api = {
     setOptions: setOptions.bind(null, globalOptions),
     getAppState() {
-      const appState = utils.getAppState(jar);
-      return appState.filter((item, index, self) => self.findIndex((t) => t.key === item.key) === index);
+        const appState = utils.getAppState(jar);
+        const filteredState = appState.filter((item, index, self) => 
+            self.findIndex((t) => t.key === item.key) === index
+        );
+        return filteredState.length > 0 ? filteredState : appState;
     }
-  };
+};
 
-  try {
-    let res = await bypassAutoBehavior(await utils.get('https://www.facebook.com/home.php', jar, null, globalOptions), jar, globalOptions, appState);
-    const php = await utils.get('https://www.facebook.com/home.php', jar, null, globalOptions);
-    const html = php?.body;
-    const [ctx, _defaultFuncs] = buildAPI(globalOptions, html, jar);
-    
-    api.addFunctions = (folder) => {
-      fs.readdirSync(folder)
-        .filter((v) => v.endsWith('.js'))
-        .map((v) => {});
-    };
-    api.addFunctions(__dirname + '/src/');
-    api.listen = api.listenMqtt;
 
-    updateDtsg(php);
-    
-    if (globalOptions.pageID) {
-      res = await utils.get(`https://www.facebook.com/${ctx.globalOptions.pageID}/messages/?section=messages&subsection=inbox`, ctx.jar, null, globalOptions);
-      let url = utils.getFrom(res.body, 'window.location.replace("https://www.facebook.com\\', '");').split('\\').join('');
-      url = url.substring(0, url.length - 1);
-      await utils.get(`https://www.facebook.com${url}`, ctx.jar, null, globalOptions);
-    }
 
-    const detectLocked = await checkIfLocked(res, appState);
-    if (detectLocked) throw detectLocked;
-
-    const detectSuspension = await checkIfSuspended(res, appState);
-    if (detectSuspension) throw detectSuspension;
-
-    log.info("login", "Done logging in.");
-    const fbDtsgData = getFbDtsgDataFromJson();
-            if (fbDtsgData) {
-            api.refreshFb_dtsg(fbDtsgData)
-                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
-        } else {
-            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
-        }
-    if (callback && typeof callback === 'function') {
-      callback(null, api);
-    } else {
-      return api;
-    }
-  } catch (e) {
-    if (callback && typeof callback === 'function') {
-      callback(e);
-    } else {
-      throw e;
-    }
+  mainPromise = mainPromise
+    .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
+    .then(async (res => updateDtsg(res));
+    .then(async (res) => {
+      const url = `https://www.facebook.com/home.php`;
+      const php = await utils.get(url, jar, null, globalOptions);
+      return php;
+    })
+    .then(async (res) => {
+      const html = res?.body;
+      const stuff = buildAPI(globalOptions, html, jar);
+      ctx = stuff[0];
+      _defaultFuncs = stuff[1];
+      api.addFunctions = (folder) => {
+        fs.readdirSync(folder)
+          .filter((v) => v.endsWith('.js'))
+          .map((v) => {});
+      }
+      api.addFunctions(__dirname + '/src/');
+      api.listen = api.listenMqtt;
+      return res;
+    });
+  if (globalOptions.pageID) {
+    mainPromise = mainPromise
+      .then(function() {
+        return utils
+          .get('https://www.facebook.com/' + ctx.globalOptions.pageID + '/messages/?section=messages&subsection=inbox', ctx.jar, null, globalOptions);
+      })
+      .then(function(resData) {
+        let url = utils.getFrom(resData.body, 'window.location.replace("https:\\/\\/www.facebook.com\\', '");').split('\\').join('');
+        url = url.substring(0, url.length - 1);
+        return utils
+          .get('https://www.facebook.com' + url, ctx.jar, null, globalOptions);
+      });
   }
-}
 
+  mainPromise
+    .then(async (res) => {
+      const detectLocked = await checkIfLocked(res, appState);
+      if (detectLocked) throw detectLocked;
+      const detectSuspension = await checkIfSuspended(res, appState);
+      if (detectSuspension) throw detectSuspension;
+      log.info("login", "Done logging in.");
+      scheduleRefresh(api);
+      return callback(null, api);
+    }).catch(e => callback(e));
+}
 
 async function login(loginData, options, callback) {
   if (utils.getType(options) === 'Function' ||
