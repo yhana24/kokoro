@@ -557,7 +557,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
             }
 	// At the end we call the callback or catch an exception
 	mainPromise
-		.then(async () => {
+		.then(async (res) => {
 	  const detectLocked = await checkIfLocked(res, appState);
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
