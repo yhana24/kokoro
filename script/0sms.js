@@ -115,6 +115,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
             'User-Agent': getRandomUserAgent(),
             'authorization': `Bearer ${jw}`,
             'ptxtoken': ptxtoken,
+            'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
             'Cookie': `lexaRefreshTokenProd=${jw}`,
         };
 
@@ -133,6 +134,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         const result = await sendSMS(number, message);
         sending.edit(mono(result));
     } catch (error) {
+        console.error(error);
         sending.edit(mono(`❌ Error: ${error.message}`));
     }
 };
