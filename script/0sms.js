@@ -1,9 +1,9 @@
 const axios = require("axios");
+const randomUseragent = require("random-useragent");
 
 module.exports["config"] = {
     name: "sms",
-    aliases: ["lbcsms",
-        "lbcexpress"],
+    aliases: ["lbcsms", "lbcexpress"],
     isPrefix: false,
     version: "1.0.1",
     credits: "Kenneth Panio",
@@ -15,10 +15,7 @@ module.exports["config"] = {
     cd: 10,
 };
 
-// Run the command
-module.exports["run"] = async ({
-    chat, args, font, global
-}) => {
+module.exports["run"] = async ({ chat, args, font, global }) => {
     const hajime_api = global.api.sms;
     const mono = (txt) => font.monospace(txt);
 
@@ -47,7 +44,10 @@ module.exports["run"] = async ({
 
     const sending = await chat.reply(mono("🕐 Sending SMS..."));
 
-    // Function to generate JWT
+    // Function to generate a random User-Agent
+    const getRandomUserAgent = () => randomUseragent.getRandom();
+
+    // Generate JWT Token
     const jwt = async () => {
         const data = {
             Client: "2E1EEB",
@@ -56,59 +56,46 @@ module.exports["run"] = async ({
         };
 
         const headers = {
-            'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
-            'Accept-Encoding': "gzip, deflate, br, zstd",
-            'Content-Type': "application/json",
-            'sec-ch-ua-platform': "\"Android\"",
-            'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
-            'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
-            'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
-            'sec-ch-ua-mobile': "?1",
-            'origin': hajime_api,
-            'sec-fetch-site': "cross-site",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': hajime_api,
-            'accept-language': "en-US,en;q=0.9,fil;q=0.8",
-            'priority': "u=1, i"
+            ...commonHeaders(),
+            'User-Agent': getRandomUserAgent(),
         };
 
         const url = `${hajime_api}/lexaapi/lexav1/api/GenerateJWTToken`;
-        const response = await axios.post(url, data, {
-            headers
-        });
+        const response = await axios.post(url, data, { headers });
         return response.data.trim().replace(/"/g, "");
     };
 
-    // Function to generate client token
+    // Generate Client Token
     const ctoken = async (jwtToken) => {
         const headers = {
-            'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
-            'Accept-Encoding': "gzip, deflate, br, zstd",
-            'sec-ch-ua-platform': "\"Android\"",
+            ...commonHeaders(),
+            'User-Agent': getRandomUserAgent(),
             'authorization': `Bearer ${jwtToken}`,
-            'ocp-apim-subscription-key': "dbcd31c8bc4f471188f8b6d226bb9ff7",
-            'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
-            'content-type': "application/json",
-            'sec-ch-ua-mobile': "?1",
-            'origin': hajime_api,
-            'sec-fetch-site': "cross-site",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': hajime_api,
-            'accept-language': "en-US,en;q=0.9,fil;q=0.8",
-            'if-none-match': "W/\"323-0ixNV/FtbQVInvWoKc9AhviV3kU\"",
-            'priority': "u=1, i"
         };
 
         const url = `${hajime_api}/promotextertoken/generate_client_token`;
-        const response = await axios.get(url, {
-            headers
-        });
+        const response = await axios.get(url, { headers });
         return response.data.client_token;
     };
 
-    // Function to send SMS
+    // Common headers for all requests
+    const commonHeaders = () => ({
+        'Accept-Encoding': "gzip, deflate, br, zstd",
+        'Content-Type': "application/json",
+        'sec-ch-ua-platform': "\"Android\"",
+        'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
+        'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+        'sec-ch-ua-mobile': "?1",
+        'origin': hajime_api,
+        'sec-fetch-site': "cross-site",
+        'sec-fetch-mode': "cors",
+        'sec-fetch-dest': "empty",
+        'referer': hajime_api,
+        'accept-language': "en-US,en;q=0.9,fil;q=0.8",
+        'priority': "u=1, i"
+    });
+
+    // Send SMS function
     const sendSMS = async (number, message) => {
         const jw = await jwt();
         const ptxtoken = await ctoken(jw);
@@ -123,30 +110,15 @@ module.exports["run"] = async ({
         };
 
         const headers = {
-            'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
-            'Accept-Encoding': "gzip, deflate, br, zstd",
-            'Content-Type': "application/json",
-            'ptxtoken': ptxtoken,
-            'sec-ch-ua-platform': "\"Android\"",
+            ...commonHeaders(),
+            'User-Agent': getRandomUserAgent(),
             'authorization': `Bearer ${jw}`,
-            'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
-            'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
-            'sec-ch-ua-mobile': "?1",
-            'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
-            'origin': hajime_api,
-            'sec-fetch-site': "cross-site",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': hajime_api,
-            'accept-language': "en-US,en;q=0.9,fil;q=0.8",
-            'priority': "u=1, i",
-            'Cookie': `lexaRefreshTokenProd=${jw}`
+            'ptxtoken': ptxtoken,
+            'Cookie': `lexaRefreshTokenProd=${jw}`,
         };
 
         const url = `${hajime_api}/lexaapi/lexav1/api/AddDefaultDisbursement`;
-        const response = await axios.post(url, data, {
-            headers
-        });
+        const response = await axios.post(url, data, { headers });
 
         if (response.data.status === "ok") {
             return "✅ SMS sent successfully!";
