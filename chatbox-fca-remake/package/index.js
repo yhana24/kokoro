@@ -379,6 +379,7 @@ async function loginHelper(appState, email, password, globalOptions) {
       }
       api.addFunctions(__dirname + '/src/');
       api.listen = api.listenMqtt;
+      api.listenMqtt = api.listen;
       return res;
     })
     .then(async (res) => {
