@@ -387,7 +387,7 @@ async function login(loginData, options, callback) {
         if (isBehavior) {
           log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
           isBehavior = false;
-          loginws3();
+          hajime.relogin();
         }
         log.error("login", loginError);
         return callback(loginError);
