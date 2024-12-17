@@ -254,10 +254,11 @@ function buildAPI(globalOptions, html, jar) {
   const defaultFuncs = utils.makeDefaults(html, i_userID || userID, ctx);
   return [ctx, defaultFuncs];
 }
-async function loginHelper(appState, email, password, globalOptions) {
+async function loginHelper(appState, email, password, globalOptions, callback) {
   let mainPromise = null;
   const jar = utils.getJar();
   log.info("login", 'Logging in...');
+  
   if (appState) {
     if (utils.getType(appState) === 'Array' && appState.some(c => c.name)) {
       appState = appState.map(c => {
@@ -299,19 +300,6 @@ async function loginHelper(appState, email, password, globalOptions) {
     }
   }
 
-  const api = {
-    setOptions: setOptions.bind(null, globalOptions),
-    getAppState() {
-        const appState = utils.getAppState(jar);
-        const filteredState = appState.filter((item, index, self) => 
-            self.findIndex((t) => t.key === item.key) === index
-        );
-        return filteredState.length > 0 ? filteredState : appState;
-    }
-};
-
-
-
   mainPromise = mainPromise
     .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
     .then(res => updateDtsg(res))
@@ -334,6 +322,7 @@ async function loginHelper(appState, email, password, globalOptions) {
       api.listen = api.listenMqtt;
       return res;
     });
+  
   if (globalOptions.pageID) {
     mainPromise = mainPromise
       .then(function() {
@@ -360,8 +349,9 @@ async function loginHelper(appState, email, password, globalOptions) {
                 .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
                 .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
       return callback(null, api);
-    }).catch(e => callback(e));
+    }).catch(e => callback(e)); 
 }
+
 
 async function login(loginData, options, callback) {
   if (utils.getType(options) === 'Function' ||
@@ -392,22 +382,22 @@ async function login(loginData, options, callback) {
   }
 
   async function loginBox() {
-    loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, hajime,
-      (loginError, loginApi) => {
-        if (loginError) {
-          if (isBehavior) {
-            log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
-            isBehavior = false;
-            loginws3();
-          }
-          log.error("login", loginError);
-          return callback(loginError);
+    loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, (loginError, loginApi) => {
+      if (loginError) {
+        if (isBehavior) {
+          log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
+          isBehavior = false;
+          loginws3();
         }
-        callback(null, loginApi);
-      });
+        log.error("login", loginError);
+        return callback(loginError);
+      }
+      callback(null, loginApi);
+    });
   }
   const loginResult = await loginBox();
   return loginResult;
 }
+
 
 module.exports = login;
