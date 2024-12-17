@@ -465,13 +465,13 @@ return {
 }
 
 // unfortunately login via credentials no longer works,so instead of login via credentials, use login via appstate intead.
-function loginHelper(appState, email, password, globalOptions, callback, prCallback) {
+async function loginHelper(appState, email, password, globalOptions, callback, prCallback) {
     let mainPromise = null;
     const jar = utils.getJar();
 
     // If appState is provided, set cookies in the jar.
     if (appState) {
-        appState.forEach(function (c) {
+        appState.forEach((c) => {
             const str = `${c.key}=${c.value}; expires=${c.expires}; domain=${c.domain}; path=${c.path};`;
             jar.setCookie(str, `http://${c.domain}`);
         });
@@ -529,9 +529,9 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
     let ctx, api;
 
     mainPromise = mainPromise
-        .then(res => handleRedirect(res))
-        .then(res => checkAndFixError(res))
-        .then(res => {
+        .then((res) => handleRedirect(res))
+        .then((res) => checkAndFixError(res))
+        .then((res) => {
             if (global.OnAutoLoginProcess) return res;
 
             const regexVia = /MPageLoadClientMetrics/gs;
@@ -541,10 +541,10 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 
             return res;
         })
-        .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
-        .then(res => handleRedirect(res, global.OnAutoLoginProcess))
-        .then(res => checkAndFixError(res, global.OnAutoLoginProcess))
-        .then(res => {
+        .then((res) => bypassAutoBehavior(res, jar, globalOptions, appState))
+        .then((res) => handleRedirect(res, global.OnAutoLoginProcess))
+        .then((res) => checkAndFixError(res, global.OnAutoLoginProcess))
+        .then((res) => {
             const html = res.body;
             const obj = buildAPI(globalOptions, html, jar, bypassRegionError);
             ctx = obj.ctx;
@@ -554,11 +554,13 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 
     if (globalOptions.pageID) {
         mainPromise = mainPromise
-            .then(() => utils.get(
-                `https://www.facebook.com/${ctx.globalOptions.pageID}/messages/?section=messages&subsection=inbox`,
-                ctx.jar, null, globalOptions
-            ))
-            .then(resData => {
+            .then(() =>
+                utils.get(
+                    `https://www.facebook.com/${ctx.globalOptions.pageID}/messages/?section=messages&subsection=inbox`,
+                    ctx.jar, null, globalOptions
+                )
+            )
+            .then((resData) => {
                 let url = utils.getFrom(resData.body, 'window.location.replace("https:\\/\\/www.facebook.com\\', '");').split('\\').join('');
                 url = url.slice(0, -1);
                 return utils.get(`https://www.facebook.com${url}`, ctx.jar, null, globalOptions);
@@ -567,7 +569,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 
     // Final callback or error handling
     mainPromise
-        .then(async res => {
+        .then(async (res) => {
             const detectLocked = await checkIfLocked(res, appState);
             if (detectLocked) throw detectLocked;
 
@@ -577,9 +579,8 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
             log.info("login", "Done logging in.");
             return callback(null, api);
         })
-        .catch(err => callback(err));
+        .catch((err) => callback(err));
 }
-
 
 async function login(loginData, options, callback) {
     if (utils.getType(options) === 'Function' || utils.getType(options) === 'AsyncFunction') {
@@ -603,43 +604,36 @@ async function login(loginData, options, callback) {
     };
 
     setOptions(globalOptions, options);
-    const hajime = {
-    relogin() {
-      loginBox();
-    }
-  }
 
     let prCallback = null;
     if (utils.getType(callback) !== "Function" && utils.getType(callback) !== "AsyncFunction") {
         let rejectFunc = null;
         let resolveFunc = null;
-        var returnPromise = new Promise(function(resolve, reject) {
+        var returnPromise = new Promise(function (resolve, reject) {
             resolveFunc = resolve;
             rejectFunc = reject;
         });
-        prCallback = function(error, api) {
+        prCallback = function (error, api) {
             if (error) return rejectFunc(error);
             return resolveFunc(api);
         };
         callback = prCallback;
     }
 
-async function loginBox() {
-    loginHelper(loginData?.appState, loginData?.email, loginData.password, globalOptions, hajime,       (loginError, loginApi) => {
-        if (loginError) {
-          if (isBehavior) {
-            log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
-            isBehavior = false;
-            loginBox;
-          }
-          log.error("login", loginError);
-          return callback(loginError);
-        }
-        callback(null, loginApi);
-      });
-  }
-  const loginResult = await loginBox();
-  return loginResult;
+    async function loginBox() {
+        return new Promise((resolve, reject) => {
+            loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, (loginError, loginApi) => {
+                if (loginError) {
+                    log.error("login", loginError);
+                    return reject(loginError);
+                }
+                resolve(loginApi);
+            });
+        });
+    }
+
+    return await loginBox();
 }
+
 
 module.exports = login;
