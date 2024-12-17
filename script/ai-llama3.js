@@ -6,7 +6,7 @@ const path = require('path');
 module.exports["config"] = {
   name: "llama3",
   isPrefix: false,
-  aliases: ["meta3", "llama", "meta", "ai"],
+  aliases: ["meta3", "llama", "meta"],
   version: "1.0.0",
   credits: "Kenneth Panio",
   role: 0,
