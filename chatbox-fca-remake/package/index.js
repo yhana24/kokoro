@@ -78,23 +78,33 @@ function setOptions(globalOptions, options) {
 
 function updateDTSG(res) {
     try {
-    const fb_dtsg = utils.getFrom(resp.body, '["DTSGInitData",[],{"token":"', '","');
-    const jazoest = utils.getFrom(resp.body, 'jazoest=', '",');
-    
-    const data = {
-        fb_dtsg: fb_dtsg,
-        jazoest: jazoest
-    };
+        if (!res || !res.body) {
+            throw new Error("Invalid response: Response body is missing.");
+        }
 
-    const jsonData = JSON.stringify(data, null, 2);
+        const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
+        const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
 
-    fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
-    return res;
+        if (!fb_dtsg || !jazoest) {
+            throw new Error("Failed to extract fb_dtsg or jazoest values.");
+        }
+
+        const data = {
+            fb_dtsg: fb_dtsg,
+            jazoest: jazoest
+        };
+        const jsonData = JSON.stringify(data, null, 2);
+
+        fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
+        log.info('updateDTSG', 'fb_dtsg_data.json updated successfully.');
+
+        return res;
     } catch (error) {
-        log.error('error', error)
+        log.error('updateDTSG', `Error updating DTSG: ${error.message}`);
+        return null;
     }
-    
 }
+
 let isBehavior = false;
 async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
   try {
@@ -413,20 +423,20 @@ require('fs').readdirSync(__dirname + '/src/')
 //fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg Between 48hr or less Automatically!
 let isFirstRun = true;
 
-function scheduleRefresh() {
-    const refreshAction = () => {
-        const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
-        if (fbDtsgData) {
-            api.refreshFb_dtsg(fbDtsgData)
-                .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-                .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
-                .finally(scheduleNextRefresh);
-        } else {
-            log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
-            scheduleNextRefresh();
-        }
-    };
+function refreshAction() {
+    const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
+    if (fbDtsgData) {
+        api.refreshFb_dtsg(fbDtsgData)
+            .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
+            .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
+            .finally(scheduleNextRefresh);
+    } else {
+        log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
+        scheduleNextRefresh();
+    }
+}
 
+function scheduleRefresh() {
     if (isFirstRun) {
         isFirstRun = false;
         refreshAction();
@@ -438,7 +448,7 @@ function scheduleRefresh() {
 function scheduleNextRefresh() {
     setTimeout(() => {
         refreshAction();
-    }, Math.random() * 172800000);  // Refresh within a random time, up to 48 hours
+    }, Math.random() * 172800000); // Refresh within a random time, up to 48 hours
 }
 
 scheduleRefresh();
