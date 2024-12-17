@@ -902,8 +902,6 @@ async function accountLogin(state, prefix, admin = []) {
 
                             activeSessions.add(userId);
                         } catch (error) {
-                            console.error(`Error processing user: ${userId}`, error.message);
-
                             deleteThisUser(userId);
                         }
                     })

@@ -85,10 +85,7 @@ function updateDTSG(res) {
         const fb_dtsg = utils.getFrom(res.body, '["DTSGInitData",[],{"token":"', '","');
         const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
 
-        if (!fb_dtsg || !jazoest) {
-            throw new Error("Failed to extract fb_dtsg or jazoest values.");
-        }
-
+        if (fb_dtsg && jazoest) {
         const data = {
             fb_dtsg: fb_dtsg,
             jazoest: jazoest
@@ -97,10 +94,10 @@ function updateDTSG(res) {
 
         fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
         log.info('login', 'fb_dtsg_data.json updated successfully.');
+        }
 
         return res;
     } catch (error) {
-        log.error('updateDTSG', `Error updating DTSG: ${error.message}`);
         return null;
     }
 }
