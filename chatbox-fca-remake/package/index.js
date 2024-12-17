@@ -555,7 +555,7 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
             }
 	// At the end we call the callback or catch an exception
 	mainPromise
-		.then(function () {
+		.then(async (res) {
 	  const detectLocked = await checkIfLocked(res, appState);
       if (detectLocked) throw detectLocked;
       const detectSuspension = await checkIfSuspended(res, appState);
@@ -563,10 +563,8 @@ function loginHelper(appState, email, password, globalOptions, callback, prCallb
 			log.info("login", 'Done logging in.');
 			return callback(null, api);
 		})
-		.catch(function (e) {
-			log.error("login", e.error || e);
-			callback(e);
-		});
+      return callback(null, api);
+    }).catch(e => callback(e));
 }
 
 function login(loginData, options, callback) {
