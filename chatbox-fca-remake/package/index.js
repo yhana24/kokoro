@@ -351,6 +351,8 @@ async function loginHelper(appState, email, password, globalOptions) {
     getAppState() {
       const appState = utils.getAppState(jar);
       return appState.filter((item, index, self) => self.findIndex((t) => { return t.key === item.key }) === index);
+    } || function getAppState() {
+            return utils.getAppState(jar);
     }
   }
 
