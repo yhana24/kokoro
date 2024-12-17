@@ -384,11 +384,20 @@ async function loginHelper(appState, email, password, globalOptions, callback) {
 
     log.info("login", "Done logging in.");
     scheduleRefresh(api);
-    return callback(null, api);
+    if (callback && typeof callback === 'function') {
+      callback(null, api);
+    } else {
+      return api;
+    }
   } catch (e) {
-    return callback(e);
+    if (callback && typeof callback === 'function') {
+      callback(e);
+    } else {
+      throw e;
+    }
   }
 }
+
 
 async function login(loginData, options, callback) {
   if (utils.getType(options) === 'Function' ||
