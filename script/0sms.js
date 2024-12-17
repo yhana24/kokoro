@@ -1,54 +1,49 @@
 const axios = require("axios");
-const randomUseragent = require("random-useragent");
 
 module.exports["config"] = {
   name: "sms",
   aliases: ["lbcsms", "lbcexpress"],
   isPrefix: false,
-  version: "1.0.0",
+  version: "1.0.1",
   credits: "Kenneth Panio",
   role: 0,
   type: "utility",
-  info: "Send SMS to a specified number.",
+  info: "Send SMS to a specified PH number.",
   usage: "sms [number] [message]",
   guide: "sms 09123456789 Hello, this is a test message!",
   cd: 10,
 };
 
-// Bot command execution
+// Run the command
 module.exports["run"] = async ({ chat, args, font, global }) => {
   const mono = (txt) => font.monospace(txt);
 
+  // Validate arguments
   if (args.length < 2) {
-    chat.reply(mono("Usage: sms [number] [message]"));
+    chat.reply(mono("❗ Usage: sms [number] [message]"));
     return;
   }
 
   let number = args[0];
   const message = args.slice(1).join(" ");
 
-  // Normalize the phone number
+  // Normalize and validate the phone number
   if (number.startsWith("+63")) {
-    number = number.slice(3); // Remove "+63"
+    number = number.slice(3);
   } else if (number.startsWith("63")) {
-    number = number.slice(2); // Remove "63"
+    number = number.slice(2);
   } else if (number.startsWith("0")) {
-    number = number.slice(1); // Remove "0"
+    number = number.slice(1);
   }
 
-  // Ensure the phone number is 10 digits long
   if (!/^\d{10}$/.test(number)) {
-    chat.reply(
-      mono(
-        "Invalid phone number. It should be a PH number and start with +63, 63, or 0. Must be 10-11 digits."
-      )
-    );
+    chat.reply(mono("❗ Invalid PH phone number. Must be 10 digits starting with 09."));
     return;
   }
 
-  const sending = await chat.reply(mono("🕐 | Sending SMS..."));
+  const sending = await chat.reply(mono("🕐 Sending SMS..."));
 
-  // JWT function
+  // Function to get JWT
   const jwt = async () => {
     try {
       const data = {
@@ -58,83 +53,73 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
       };
 
       const headers = {
-        "User-Agent": randomUseragent.getRandom(),
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
         "Content-Type": "application/json",
         token: "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
       };
 
       const url = `${global.api.sms}/lexaapi/lexav1/api/GenerateJWTToken`;
       const response = await axios.post(url, data, { headers });
-
-      if (!response.data) throw new Error("JWT generation failed");
       return response.data.trim().replace(/"/g, "");
     } catch (error) {
-      throw new Error(`JWT Error: ${error.message}`);
+      throw new Error("Failed to generate JWT: " + error.message);
     }
   };
 
-  // Client token function
+  // Function to get client token
   const ctoken = async (jwtToken) => {
     try {
       const headers = {
-        "User-Agent": randomUseragent.getRandom(),
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
         authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
         "ocp-apim-subscription-key": "dbcd31c8bc4f471188f8b6d226bb9ff7",
       };
 
       const url = `${global.api.sms}/promotextertoken/generate_client_token`;
       const response = await axios.get(url, { headers });
-
-      if (!response.data.client_token) throw new Error("Client token not received");
       return response.data.client_token;
     } catch (error) {
-      throw new Error(`Client Token Error: ${error.message}`);
+      throw new Error("Failed to generate client token: " + error.message);
     }
   };
 
-  // SMS sending function
+  // Function to send SMS
   const sendSMS = async (number, message) => {
-    try {
-      const jwtToken = await jwt();
-      const clientToken = await ctoken(jwtToken);
+    const jwtToken = await jwt();
+    const clientToken = await ctoken(jwtToken);
 
-      const data = {
-        Recipient: "63" + number,
-        Message: message,
-        ShipperUuid: "LBCEXPRESS",
-        DefaultDisbursement: 3,
-        ApiSecret: "03da764a333680d6ebd2f6f4ef1e2928",
-        apikey: "7777be96b2d1c6d0dee73d566a820c5f",
-      };
+    const data = {
+      Recipient: "63" + number,
+      Message: message,
+      ShipperUuid: "LBCEXPRESS",
+      DefaultDisbursement: 3,
+      ApiSecret: "03da764a333680d6ebd2f6f4ef1e2928",
+      apikey: "7777be96b2d1c6d0dee73d566a820c5f",
+    };
 
-      const headers = {
-        "User-Agent": randomUseragent.getRandom(),
-        "Content-Type": "application/json",
-        ptxtoken: clientToken,
-        authorization: `Bearer ${jwtToken}`,
-        token: "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
-      };
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Linux; Android 10)",
+      "Content-Type": "application/json",
+      ptxtoken: clientToken,
+      authorization: `Bearer ${jwtToken}`,
+      token: "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
+    };
 
-      const url = `${global.api.sms}/lexaapi/lexav1/api/AddDefaultDisbursement`;
-      const response = await axios.post(url, data, { headers });
-
-      return response.data;
-    } catch (error) {
-      throw new Error(`SMS Sending Error: ${error.message}`);
-    }
+    const url = `${global.api.sms}/lexaapi/lexav1/api/AddDefaultDisbursement`;
+    const response = await axios.post(url, data, { headers });
+    return response.data;
   };
 
-  // Execute the SMS sending process
+  // Execute SMS logic
   try {
     const result = await sendSMS(number, message);
 
     if (result.status === "ok") {
-      sending.edit(mono("✅ | SMS SENT SUCCESSFULLY!"));
+      sending.edit(mono("✅ SMS sent successfully!"));
     } else {
-      sending.edit(mono(`❌ | SMS Failed: ${result.message || "Unknown error"}`));
+      sending.edit(mono(`❌ Failed to send SMS: ${result.message || "Unknown error"}`));
     }
   } catch (error) {
-    sending.edit(mono(`❌ | Error: ${error.message}`));
+    sending.edit(mono(`❌ Error: ${error.message}`));
   }
 };
