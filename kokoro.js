@@ -424,7 +424,7 @@ async function accountLogin(state, prefix, admin = []) {
 
                             if (event.senderID && event.body) {
 
-                                chat.log(`ID: ${event.senderID}\nMessage: ${event.body}`);
+                                chat.log(`ID: ${event.senderID}\nINBOX: ${event.body}`);
 
                             }
 
