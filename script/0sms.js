@@ -88,7 +88,7 @@ module.exports["run"] = async ({
             'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
             'Accept-Encoding': "gzip, deflate, br, zstd",
             'sec-ch-ua-platform': "\"Android\"",
-            'authorization': `Bearer ${await jwt()}`,
+            'authorization': `Bearer ${jw}`,
             'ocp-apim-subscription-key': "dbcd31c8bc4f471188f8b6d226bb9ff7",
             'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
             'content-type': "application/json",
