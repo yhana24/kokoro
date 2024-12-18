@@ -343,7 +343,7 @@ async function accountLogin(state, prefix, admin = []) {
                 }
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, state, prefix, admin);
+                addThisUser(userid, api.getAppState || state, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
