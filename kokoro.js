@@ -926,24 +926,9 @@ async function accountLogin(state, prefix, admin = []) {
                 }
             }];
 
-            const super_admins = {
-                admins: [
-                    "61563504007719",
-                    "100047505630312",
-                    "61561308225073",
-                    "61553851666802",
-                    "61550873742628",
-                    "100081201591674",
-                    "61557847859084",
-                    "61556556071548",
-                    "61567428059504"
-                ],
-            };
-
             const dataFolder = "./data";
             if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
             fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
-            fs.writeFileSync("./kokoro.json", JSON.stringify(super_admins, null, 2));
             return config;
         };
 
