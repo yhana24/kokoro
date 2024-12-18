@@ -15,10 +15,11 @@ module.exports["config"] = {
 };
 
 module.exports["run"] = async ({ chat, args, font, global }) => {
-    const hajime = global.api.sms; // Ensure this is correctly set in your configuration
+    const main = global.api.sms[0];
+    const gateway = global.api.sms[1];
+    
     const mono = (txt) => font.monospace(txt);
 
-    // Validate input arguments
     if (args.length < 2) {
         return chat.reply(mono("❗ Usage: sms [number] [message]"));
     }
@@ -26,7 +27,6 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
     let number = args[0];
     const message = args.slice(1).join(" ");
 
-    // Sanitize and validate phone number
     if (number.startsWith("+63")) {
         number = number.slice(3);
     } else if (number.startsWith("63")) {
@@ -75,8 +75,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         
         chat.log(jwtToken);
 
-        // Step 2: Generate client token
-        const clientTokenResponse = await axios.get(`${hajime}/promotextertoken/generate_client_token`, {
+        const clientTokenResponse = await axios.get(`${gateway}/promotextertoken/generate_client_token`, {
             headers: {
                 'User-Agent': "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
                 'Accept-Encoding': "gzip, deflate, br, zstd",
@@ -86,11 +85,11 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                 'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
                 'content-type': "application/json",
                 'sec-ch-ua-mobile': "?1",
-                'origin': hajime,
+                'origin': main,
                 'sec-fetch-site': "cross-site",
                 'sec-fetch-mode': "cors",
                 'sec-fetch-dest': "empty",
-                'referer': hajime,
+                'referer': main,
                 'accept-language': "en-US,en;q=0.9,fil;q=0.8",
                 'priority': "u=1, i",
             },
@@ -102,7 +101,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
 
         // Step 3: Send SMS
         const smsResponse = await axios.post(
-            `${hajime}/lexaapi/lexav1/api/AddDefaultDisbursement`,
+            `${gateway}/lexaapi/lexav1/api/AddDefaultDisbursement`,
             {
                 Recipient: "63" + number,
                 Message: message,
@@ -122,11 +121,11 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                     'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
                     'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
                     'sec-ch-ua-mobile': "?1",
-                    'origin': hajime,
+                    'origin': main,
                     'sec-fetch-site': "cross-site",
                     'sec-fetch-mode': "cors",
                     'sec-fetch-dest': "empty",
-                    'referer': hajime,
+                    'referer': main,
                     'accept-language': "en-US,en;q=0.9,fil;q=0.8",
                     'priority': "u=1, i",
                     'Cookie': `lexaRefreshTokenProd=${jwtToken}`,
