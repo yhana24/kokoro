@@ -845,27 +845,37 @@ async function accountLogin(state, prefix, admin = []) {
             fs.existsSync("./data") && fs.existsSync("./data/config.json")
             ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
 
-                cron.schedule(`*/15 * * * *`, async () => {
-                    try {
-                        const history = JSON.parse(fs.readFileSync(configFile, "utf-8"));
-                        history.forEach((user) => {
-                            if (!user || typeof user !== "object") throw new Error("Invalid user object");
-                            if (!user.time || isNaN(user.time)) throw new Error("Invalid user time");
 
-                            const update = Utils.account.get(user.userid);
-                            if (update) user.time = update.time;
-                        });
-
-                        await empty.emptyDir(cacheFile);
-                        fs.writeFileSync(configFile,
-                            JSON.stringify(history, null, 2));
-                    } catch (cronError) {
-                        console.error("Error in cron job:",
-                            cronError.message);
-                    }
-                });
-                
             try {
+
+                const checkHistory = async () => {
+                    const history = JSON.parse(
+                        fs.readFileSync("./data/history.json", "utf-8")
+                    );
+
+                    history.forEach(user => {
+                        if (!user || typeof user !== "object") process.exit(1);
+
+                        if (user.time === undefined || user.time === null || isNaN(user.time)) {
+                            process.exit(1);
+                        }
+
+                        const update = Utils.account.get(user.userid);
+                        if (update) {
+                            user.time = update.time;
+                        }
+                    });
+
+                    await empty.emptyDir(cacheFile);
+                    fs.writeFileSync(
+                        "./data/history.json",
+                        JSON.stringify(history, null, 2)
+                    );
+                };
+
+                setInterval(checkHistory,
+                    15 * 60 * 1000);
+
                 const files = fs.readdirSync(sessionFolder);
 
                 await Promise.all(
