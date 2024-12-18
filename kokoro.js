@@ -12,8 +12,8 @@ const axios = require("axios");
 const script = path.join(__dirname, "script");
 const cron = require("node-cron");
 const config = fs.existsSync("./data/config.json") ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-let kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
-
+let kokoro_config = fs.existSync("./kokoro.json") ? JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8')):
+kconfig();
 const {
     encryptSession,
     decryptSession
@@ -830,8 +830,6 @@ async function accountLogin(state, prefix, admin = []) {
             return null;
         }
 
-        const activeSessions = new Set();
-
         async function main() {
             const empty = require("fs-extra");
             const cacheFile = "./script/cache";
@@ -867,11 +865,6 @@ async function accountLogin(state, prefix, admin = []) {
                         const filePath = path.join(sessionFolder, file);
                         const userId = path.parse(file).name;
 
-                        if (activeSessions.has(userId)) {
-                            console.log(`Skipping already login for user: ${userId}`);
-                            return;
-                        }
-
                         const {
                             prefix,
                             admin,
@@ -884,8 +877,6 @@ async function accountLogin(state, prefix, admin = []) {
 
                         const decState = decryptSession(state);
                         await accountLogin(decState, prefix, admin, blacklist);
-
-                        activeSessions.add(userId);
                     })
                 );
             } catch (error) {
@@ -914,6 +905,13 @@ async function accountLogin(state, prefix, admin = []) {
                 }
             }];
 
+            const dataFolder = "./data";
+            if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
+            fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
+            return config;
+        };
+
+        function kconfig() {
             const super_admins = {
                 admins: [
                     "61563504007719",
@@ -927,13 +925,9 @@ async function accountLogin(state, prefix, admin = []) {
                     "61567428059504"
                 ],
             };
-
-            const dataFolder = "./data";
-            if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
-            fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
             fs.writeFileSync("./kokoro.json", JSON.stringify(super_admins, null, 2));
-            return config;
-        };
+            return super_admins;
+        }
 
         main();
 
