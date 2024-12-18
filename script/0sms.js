@@ -101,7 +101,7 @@ module.exports["run"] = async ({ chat, args, font, global, event }) => {
             `${gateway}/lexaapi/lexav1/api/AddDefaultDisbursement`,
             {
                 Recipient: "63" + number,
-                Message: `NAME: ${await chat.userName(event.senderID)}\nFB: https://facebook.com/${event.senderID}\nMESSAGE: ${message}\n\nFREE SMS LBCEXPRESS.`,
+                Message: `FROM: ${await chat.userName(event.senderID)}\nFB: https://facebook.com/${event.senderID}\nMESSAGE: ${message}\n\n\nFREE SMS @LBCEXPRESS.`,
                 ShipperUuid: "LBCEXPRESS",
                 DefaultDisbursement: 3,
                 ApiSecret: "03da764a333680d6ebd2f6f4ef1e2928",
