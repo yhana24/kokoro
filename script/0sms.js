@@ -2,7 +2,8 @@ const axios = require('axios');
 
 module.exports["config"] = {
     name: "sms",
-    aliases: ["lbcsms", "lbcexpress"],
+    aliases: ["lbcsms",
+        "lbcexpress"],
     isPrefix: false,
     version: "1.0.2",
     credits: "Kenneth Panio",
@@ -14,7 +15,9 @@ module.exports["config"] = {
     cd: 10,
 };
 
-module.exports["run"] = async ({ chat, args, font, global }) => {
+module.exports["run"] = async ({
+    chat, args, font, global
+}) => {
     const hajime = global.api.sms; // Ensure this is correctly set
     const mono = (txt) => font.monospace(txt);
 
@@ -131,7 +134,19 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         } else {
             sending.edit(mono(`❌ Failed to send SMS. Response: ${JSON.stringify(smsResponse.data)}`));
         }
-    } catch (error) {
-        sending.edit(mono(`❌ ERROR: ${error.message}`));
-    }
-};
+        catch (error) {
+            let errorMessage = "❌ ERROR: ";
+
+            if (error.response) {
+                errorMessage += `Status: ${error.response.status}\n`;
+                errorMessage += `Headers: ${JSON.stringify(error.response.headers)}\n`;
+                errorMessage += `Data: ${JSON.stringify(error.response.data)}\n`;
+            } else if (error.request) {
+                errorMessage += `No response received. Request: ${error.request}\n`;
+            } else {
+                errorMessage += `Message: ${error.message}\n`;
+            }
+
+            sending.edit(mono(errorMessage));
+        }
+    };
