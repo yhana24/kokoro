@@ -5,9 +5,10 @@ const path = require('path');
 const log = require("npmlog");
 
 module.exports = ({ api, font }) => {
+    // Helper to format text in monospace if font is available
     const mono = txt => font.monospace ? font.monospace(txt) : txt;
 
-    // Load configuration file
+    // Correctly resolve the path to kokoro.json
     const configPath = path.resolve(__dirname, '../kokoro.json');
     let config;
     try {
@@ -113,6 +114,7 @@ module.exports = ({ api, font }) => {
         }
     }
 
+    // Schedule greetings based on time of day
     const scheduleGreetings = (timeOfDay, hours) => {
         if (!greetings[timeOfDay]) {
             console.error(`Invalid time of day: ${timeOfDay}`);
@@ -123,11 +125,13 @@ module.exports = ({ api, font }) => {
         });
     };
 
+    // Ensure cron jobs exist in the configuration
     if (!config.cronJobs || typeof config.cronJobs !== 'object') {
         console.error("Invalid or missing cron jobs configuration.");
         return;
     }
 
+    // Iterate over cron jobs in the configuration
     Object.entries(config.cronJobs).forEach(([key, job]) => {
         if (!job.enabled) return;
 

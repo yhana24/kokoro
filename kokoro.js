@@ -391,7 +391,7 @@ async function accountLogin(state, prefix, admin = []) {
                         1000);
 
                     const cronjob = require('./system/custom.js')({
-                        api,
+                        api: api,
                         font,
                         fonts: font
                     });
