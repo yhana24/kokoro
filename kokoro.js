@@ -899,8 +899,6 @@ async function accountLogin(state, prefix, admin = []) {
 
                         const decState = decryptSession(state);
                         await accountLogin(decState, prefix, admin, blacklist);
-
-                        activeSessions.add(userId);
                     })
                 );
             } catch (error) {
