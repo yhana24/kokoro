@@ -391,7 +391,6 @@ async function accountLogin(state, prefix, admin = []) {
                         1000);
 
                     const cronjob = require('./system/custom.js')({
-                        chat: new OnChat(),
                         api,
                         font,
                         fonts: font

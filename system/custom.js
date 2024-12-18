@@ -2,8 +2,9 @@ const cron = require('node-cron');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const log = require("npmlog");
 
-module.exports = ({ api, font, chat }) => {
+module.exports = ({ api, font }) => {
     const mono = txt => font.monospace ? font.monospace(txt) : txt;
 
     const configPath = path.resolve(__dirname, '../kokoro.json');
@@ -44,13 +45,13 @@ module.exports = ({ api, font, chat }) => {
     }
 
     async function restart() {
-        chat.log("Restarting...");
+        log.info("Restarting...");
         process.exit(0);
     }
 
     async function clearChat() {
         try {
-            chat.log("Clearing chat...");
+            log.info("Clearing chat...");
             const threads = await api.getThreadList(25, null, ['INBOX']);
             for (const thread of threads) {
                 if (!thread.isGroup) {
@@ -64,7 +65,7 @@ module.exports = ({ api, font, chat }) => {
 
     async function acceptPending() {
         try {
-            chat.log("Accepting pending messages...");
+            log.info("Accepting pending messages...");
             const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
             for (const thread of pendingThreads) {
                 await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch();
@@ -76,7 +77,7 @@ module.exports = ({ api, font, chat }) => {
 
     async function motivation() {
         try {
-            chat.log("Posting motivational quotes...");
+            log.info("Posting motivational quotes...");
             const response = await axios.get("https://raw.githubusercontent.com/JamesFT/Database-Quotes-JSON/master/quotes.json");
             const quotes = response.data;
             if (!Array.isArray(quotes) || quotes.length === 0) {
