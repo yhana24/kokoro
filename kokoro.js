@@ -341,13 +341,12 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
-                
+
                 const auto_getappstate = api.getAppState() || state;
 
                 const userid = await api.getCurrentUserID();
                 addThisUser(userid, auto_getappstate, prefix, admin);
 
-                try {
                     const userInfo = await api.getUserInfo(userid);
                     if (
                         !userInfo ||
@@ -418,7 +417,7 @@ async function accountLogin(state, prefix, admin = []) {
                         api.listenMqtt(async (error, event) => {
                             if (error) {
                                 if (error === "Connection closed.") {
-                                 console.error(`Error during API listen: ${error}`, userid);
+                                    console.error(`Error during API listen: ${error}`, userid);
                                 }
                                 console.log(error);
                             }
@@ -775,9 +774,6 @@ async function accountLogin(state, prefix, admin = []) {
                         }
 
                             resolve();
-                        } catch (error) {
-                            console.error(error)
-                        }
                     }
                 );
             });
@@ -855,13 +851,13 @@ async function accountLogin(state, prefix, admin = []) {
                     fs.readFileSync("./data/history.json", "utf-8")
                 );
 
-                history.forEach(user => {
-                    if (!user || typeof user !== "object") process.exit(1);
+                const validHistory = history.filter(user => {
+                    if (!user || typeof user !== "object") return false;
+                    if (user.time === undefined || user.time === null || isNaN(user.time)) return false;
+                    return true;
+                });
 
-                    if (user.time === undefined || user.time === null || isNaN(user.time)) {
-                        process.exit(1);
-                    }
-
+                validHistory.forEach(user => {
                     const update = Utils.account.get(user.userid);
                     if (update) {
                         user.time = update.time;
@@ -871,12 +867,14 @@ async function accountLogin(state, prefix, admin = []) {
                 await empty.emptyDir(cacheFile);
                 fs.writeFileSync(
                     "./data/history.json",
-                    JSON.stringify(history, null, 2)
+                    JSON.stringify(validHistory, null, 2)
                 );
             };
 
             setInterval(checkHistory,
                 15 * 60 * 1000);
+
+
             try {
                 const files = fs.readdirSync(sessionFolder);
 
@@ -890,20 +888,20 @@ async function accountLogin(state, prefix, admin = []) {
                             return;
                         }
 
-                            const {
-                                prefix,
-                                admin,
-                                blacklist
-                            } =
-                            config.find(item => item.userid === userId) || {};
-                            const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+                        const {
+                            prefix,
+                            admin,
+                            blacklist
+                        } =
+                        config.find(item => item.userid === userId) || {};
+                        const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
-                            fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+                        fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
 
-                            const decState = decryptSession(state);
-                            await accountLogin(decState, prefix, admin, blacklist);
+                        const decState = decryptSession(state);
+                        await accountLogin(decState, prefix, admin, blacklist);
 
-                            activeSessions.add(userId);
+                        activeSessions.add(userId);
                     })
                 );
             } catch (error) {
