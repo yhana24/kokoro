@@ -9,7 +9,7 @@ module.exports["config"] = {
     role: 0,
     type: "utility",
     info: "Send SMS to a specified PH number.",
-    usage: "sms [number] [message]",
+    usage: "[number] [message]",
     guide: "sms 09123456789 Hello, this is a test message!",
     cd: 10,
 };

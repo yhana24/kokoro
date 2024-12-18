@@ -9,7 +9,7 @@ module.exports["config"] = {
     role: 0,
     type: "utility",
     info: "Loop sending random messages to a specified PH number, up to a limit of 150 messages.",
-    usage: "smsbomb [number] [times]",
+    usage: "[number] [times]",
     guide: "smsbomb 09123456789 5",
     cd: 10,
 };
