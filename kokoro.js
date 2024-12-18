@@ -12,8 +12,8 @@ const axios = require("axios");
 const script = path.join(__dirname, "script");
 const cron = require("node-cron");
 const config = fs.existsSync("./data/config.json") ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-kconfig();
 let kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
+
 const {
     encryptSession,
     decryptSession
@@ -342,437 +342,438 @@ async function accountLogin(state, prefix, admin = []) {
                     return;
                 }
 
-
                 const userid = await api.getCurrentUserID();
                 addThisUser(userid, state, prefix, admin);
 
-                const userInfo = await api.getUserInfo(userid);
-                if (
-                    !userInfo ||
-                    !userInfo[userid]?.name ||
-                    !userInfo[userid]?.profileUrl ||
-                    !userInfo[userid]?.thumbSrc
-                ) {
-                    throw new Error("Unable to locate the account; it appears to be in a suspended or locked state.");
-                }
-
-                const {
-                    name,
-                    profileUrl,
-                    thumbSrc
-                } = userInfo[userid];
-                let time = (
-                    JSON.parse(
-                        fs.readFileSync("./data/history.json", "utf-8")
-                    ).find(user => user.userid === userid) || {}
-                ).time || 0;
-
-                Utils.account.set(userid, {
-                    name,
-                    profileUrl,
-                    thumbSrc,
-                    time: time,
-                    online: true
-                });
-
-                const intervalId = setInterval(() => {
-                    try {
-                        const account = Utils.account.get(userid);
-                        if (!account) throw new Error("Account not found");
-                        Utils.account.set(userid, {
-                            ...account,
-                            time: account.time + 1
-                        });
-                    } catch (error) {
-                        clearInterval(intervalId);
-                        return;
-                    }
-                },
-                    1000);
-
-                const cronjob = require('./system/custom.js')({
-                    chat: new OnChat(),
-                    api,
-                    font,
-                    fonts: font
-                });
-
-                const {
-                    listenEvents, logLevel, updatePresence, selfListen, forceLogin, online, autoMarkDelivery, autoMarkRead
-                } = config[0].fcaOption;
-
-                api.setOptions({
-                    listenEvents,
-                    logLevel,
-                    updatePresence,
-                    selfListen,
-                    forceLogin,
-                    online,
-                    autoMarkDelivery,
-                    autoMarkRead
-                });
-
                 try {
-                    api.listenMqtt(async (error, event) => {
-                        if (error) {
-                            if (error === "Connection closed.") {
-                                console.error(`Error during API listen: ${error}`, userid);
-                            }
-                            console.log(error);
-                        }
+                    const userInfo = await api.getUserInfo(userid);
+                    if (
+                        !userInfo ||
+                        !userInfo[userid]?.name ||
+                        !userInfo[userid]?.profileUrl ||
+                        !userInfo[userid]?.thumbSrc
+                    ) {
+                        throw new Error("Unable to locate the account; it appears to be in a suspended or locked state.");
+                    }
 
-                        const chat = new OnChat(api, event);
-                        kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
+                    const {
+                        name,
+                        profileUrl,
+                        thumbSrc
+                    } = userInfo[userid];
+                    let time = (
+                        JSON.parse(
+                            fs.readFileSync("./data/history.json", "utf-8")
+                        ).find(user => user.userid === userid) || {}
+                    ).time || 0;
 
-                        if (event.senderID && event.body) {
+                    Utils.account.set(userid, {
+                        name,
+                        profileUrl,
+                        thumbSrc,
+                        time: time,
+                        online: true
+                    });
 
-                            chat.log(`ID: ${event.senderID}\nINBOX: ${event.body}`);
-
-                        }
-
-
-                        chat.killme(kokoro_config.author, 2);
-
-                        const reply = async (msg) => {
-                            const msgInfo = await chat.reply(font.thin(msg));
-                            msgInfo?.unsend(15000);
-                        };
-
-                        const historyPath = './data/history.json';
-
-                        let history;
-                        if (fs.existsSync(historyPath)) {
-                            history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
-                        } else {
-                            history = {};
-                        }
-
-                        let blacklist =
-                        (
-                            history.find(
-                                blacklist => blacklist.userid === userid
-                            ) || {}
-                        ).blacklist || [];
-
-                        let isPrefix =
-                        event.body &&
-                        aliases(
-                            (event.body || "").trim().toLowerCase()
-                            .split(/ +/)
-                            .shift()
-                        )?.isPrefix == false
-                        ? "": prefix;
-
-                        let [command,
-                            ...args] = (event.body || "")
-                        .trim()
-                        .toLowerCase()
-                        .startsWith(isPrefix?.toLowerCase())
-                        ? (event.body || "")
-                        .trim()
-                        .substring(isPrefix?.length)
-                        .trim()
-                        .split(/\s+/)
-                        .map(arg => arg.trim()): [];
-
-                        if (isPrefix && aliases(command)?.isPrefix === false) {
-                            await reply(
-                                `this command doesn't need a prefix set by author.`
-                            );
+                    const intervalId = setInterval(() => {
+                        try {
+                            const account = Utils.account.get(userid);
+                            if (!account) throw new Error("Account not found");
+                            Utils.account.set(userid, {
+                                ...account,
+                                time: account.time + 1
+                            });
+                        } catch (error) {
+                            clearInterval(intervalId);
                             return;
                         }
+                    },
+                        1000);
 
-                        const maintenanceEnabled = kokoro_config?.maintenance?.enabled ?? false;
+                    const cronjob = require('./system/custom.js')({
+                        chat: new OnChat(),
+                        api,
+                        font,
+                        fonts: font
+                    });
 
-                        if (event.body && aliases(command?.toLowerCase())?.name) {
-                            const role = aliases(command)?.role ?? 0;
-                            const senderID = event.senderID;
+                    const {
+                        listenEvents, logLevel, updatePresence, selfListen, forceLogin, online, autoMarkDelivery, autoMarkRead
+                    } = config[0].fcaOption;
 
-                            const isAdmin =
-                            kokoro_config?.admins.includes(
-                                event.senderID
-                            ) || admin.includes(event.senderID);
+                    api.setOptions({
+                        listenEvents,
+                        logLevel,
+                        updatePresence,
+                        selfListen,
+                        forceLogin,
+                        online,
+                        autoMarkDelivery,
+                        autoMarkRead
+                    });
 
-                            if (maintenanceEnabled && !isAdmin) {
-                                await reply(`Our system is currently undergoing maintenance. Please try again later!`);
-                                return;
+                    try {
+                        api.listenMqtt(async (error, event) => {
+                            if (error) {
+                                if (error === "Connection closed.") {}
+                                console.log(error);
                             }
 
-                            // Role-based permission checks
-                            const isThreadAdmin = isAdmin;
+                            const chat = new OnChat(api, event);
+                            kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
 
-                            if ((role === 1 && !isAdmin) ||
-                                (role === 2 && !isThreadAdmin) ||
-                                (role === 3 && !isAdmin)) {
-                                await reply(`You don't have permission to use this command.`);
-                                return;
+                            if (event.senderID && event.body) {
+
+                                chat.log(`ID: ${event.senderID}\nINBOX: ${event.body}`);
+
                             }
-                        }
 
 
+                            chat.killme(kokoro_config.author, 2);
 
-                        if (event.body && event.body
-                            ?.toLowerCase()
-                            .startsWith(prefix.toLowerCase()) &&
-                            aliases(command)?.name) {
-                            if (blacklist?.includes(event.senderID)) {
-                                await reply(
-                                    "We're sorry, but you've been banned from using bot. If you believe this is a mistake or would like to appeal, please contact one of the bot admins for further assistance."
-                                );
-                                chat.react("🖕");
-                                return;
-                            }
-                        }
+                            const reply = async (msg) => {
+                                const msgInfo = await chat.reply(font.thin(msg));
+                                msgInfo?.unsend(5000);
+                            };
 
-                        if (event.body && aliases(command)?.name) {
-                            const botID = api.getCurrentUserID();
-                            const now = Date.now();
-                            const name = aliases(command)?.name;
-                            const sender = Utils.cooldowns.get(
-                                `${event.senderID}_${name}_${userid}_${botID}`
-                            );
-                            const delay = aliases(command)?.cd ?? 0;
+                            const historyPath = './data/history.json';
 
-                            if (!sender || now - sender.timestamp >= delay * 1000) {
-                                Utils.cooldowns.set(
-                                    `${event.senderID}_${name}_${userid}_${botID}`,
-                                    {
-                                        timestamp: now,
-                                        command: name
-                                    }
-                                );
+                            let history;
+                            if (fs.existsSync(historyPath)) {
+                                history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
                             } else {
-                                const active = Math.ceil(
-                                    (sender.timestamp + delay * 1000 - now) /
-                                    1000
-                                );
-                                chat.react("⏳");
+                                history = {};
+                            }
+
+                            let blacklist =
+                            (
+                                history.find(
+                                    blacklist => blacklist.userid === userid
+                                ) || {}
+                            ).blacklist || [];
+
+                            let isPrefix =
+                            event.body &&
+                            aliases(
+                                (event.body || "").trim().toLowerCase()
+                                .split(/ +/)
+                                .shift()
+                            )?.isPrefix == false
+                            ? "": prefix;
+
+                            let [command,
+                                ...args] = (event.body || "")
+                            .trim()
+                            .toLowerCase()
+                            .startsWith(isPrefix?.toLowerCase())
+                            ? (event.body || "")
+                            .trim()
+                            .substring(isPrefix?.length)
+                            .trim()
+                            .split(/\s+/)
+                            .map(arg => arg.trim()): [];
+
+                            if (isPrefix && aliases(command)?.isPrefix === false) {
                                 await reply(
-                                    `Please wait ${active} second(s) before using the "${name}" command again.`
+                                    `this command doesn't need a prefix set by author.`
                                 );
                                 return;
                             }
-                        }
 
-                        const premiumDataPath = './data/premium.json';
-                        let premium;
+                            const maintenanceEnabled = kokoro_config?.maintenance?.enabled ?? false;
 
-                        if (fs.existsSync(premiumDataPath)) {
-                            premium = JSON.parse(fs.readFileSync(premiumDataPath, 'utf8'));
-                        } else {
-                            premium = {};
-                        }
+                            if (event.body && aliases(command?.toLowerCase())?.name) {
+                                const role = aliases(command)?.role ?? 0;
+                                const senderID = event.senderID;
 
-                        const senderID = event.senderID;
-                        const commandName = aliases(command)?.name;
-                        const currentTime = Date.now();
-                        const oneDay = 25 * 60 * 1000;
+                                const isAdmin =
+                                kokoro_config?.admins.includes(
+                                    event.senderID
+                                ) || admin.includes(event.senderID);
 
-                        /* 24 * 60 * 60 * 1000;  24 hours in milliseconds*/
+                                if (maintenanceEnabled && !isAdmin) {
+                                    await reply(`Our system is currently undergoing maintenance. Please try again later!`);
+                                    return;
+                                }
 
-                        // Check if the command requires a premium user
-                        if (aliases(command)?.isPremium === true) {
-                            // Check if the sender is a premium user or an admin
-                            const isAdmin = admin.includes(senderID) || (kokoro_config?.admins.includes(senderID));
-                            const isPremiumUser = premium[senderID];
+                                // Role-based permission checks
+                                const isThreadAdmin = isAdmin;
 
-                            if (!isAdmin && !isPremiumUser) {
-                                const usageKey = `${senderID}_${commandName}_${api.getCurrentUserID}`;
-                                const usageInfo = Utils.limited.get(usageKey);
+                                if ((role === 1 && !isAdmin) ||
+                                    (role === 2 && !isThreadAdmin) ||
+                                    (role === 3 && !isAdmin)) {
+                                    await reply(`You don't have permission to use this command.`);
+                                    return;
+                                }
+                            }
 
-                                if (usageInfo) {
-                                    const timeElapsed = currentTime - usageInfo.timestamp;
-                                    if (timeElapsed >= oneDay) {
+
+
+                            if (event.body && event.body
+                                ?.toLowerCase()
+                                .startsWith(prefix.toLowerCase()) &&
+                                aliases(command)?.name) {
+                                if (blacklist?.includes(event.senderID)) {
+                                    await reply(
+                                        "We're sorry, but you've been banned from using bot. If you believe this is a mistake or would like to appeal, please contact one of the bot admins for further assistance."
+                                    );
+                                    chat.react("🖕");
+                                    return;
+                                }
+                            }
+
+                            if (event.body && aliases(command)?.name) {
+                                const botID = api.getCurrentUserID();
+                                const now = Date.now();
+                                const name = aliases(command)?.name;
+                                const sender = Utils.cooldowns.get(
+                                    `${event.senderID}_${name}_${userid}_${botID}`
+                                );
+                                const delay = aliases(command)?.cd ?? 0;
+
+                                if (!sender || now - sender.timestamp >= delay * 1000) {
+                                    Utils.cooldowns.set(
+                                        `${event.senderID}_${name}_${userid}_${botID}`,
+                                        {
+                                            timestamp: now,
+                                            command: name
+                                        }
+                                    );
+                                } else {
+                                    const active = Math.ceil(
+                                        (sender.timestamp + delay * 1000 - now) /
+                                        1000
+                                    );
+                                    chat.react("⏳");
+                                    await reply(
+                                        `Please wait ${active} second(s) before using the "${name}" command again.`
+                                    );
+                                    return;
+                                }
+                            }
+
+                            const premiumDataPath = './data/premium.json';
+                            let premium;
+
+                            if (fs.existsSync(premiumDataPath)) {
+                                premium = JSON.parse(fs.readFileSync(premiumDataPath, 'utf8'));
+                            } else {
+                                premium = {};
+                            }
+
+                            const senderID = event.senderID;
+                            const commandName = aliases(command)?.name;
+                            const currentTime = Date.now();
+                            const oneDay = 25 * 60 * 1000;
+
+                            /* 24 * 60 * 60 * 1000;  24 hours in milliseconds*/
+
+                            // Check if the command requires a premium user
+                            if (aliases(command)?.isPremium === true) {
+                                // Check if the sender is a premium user or an admin
+                                const isAdmin = admin.includes(senderID) || (kokoro_config?.admins.includes(senderID));
+                                const isPremiumUser = premium[senderID];
+
+                                if (!isAdmin && !isPremiumUser) {
+                                    const usageKey = `${senderID}_${commandName}_${api.getCurrentUserID}`;
+                                    const usageInfo = Utils.limited.get(usageKey);
+
+                                    if (usageInfo) {
+                                        const timeElapsed = currentTime - usageInfo.timestamp;
+                                        if (timeElapsed >= oneDay) {
+                                            Utils.limited.set(usageKey, {
+                                                count: 0, timestamp: currentTime
+                                            });
+                                        }
+                                    } else {
                                         Utils.limited.set(usageKey, {
                                             count: 0, timestamp: currentTime
                                         });
                                     }
-                                } else {
-                                    Utils.limited.set(usageKey, {
-                                        count: 0, timestamp: currentTime
-                                    });
-                                }
 
-                                const updatedUsageInfo = Utils.limited.get(usageKey);
-                                if (updatedUsageInfo.count >= aliases(command)?.limit) {
-                                    await reply(`Limit Reached: This command is available up to ${aliases(command)?.limit} times per 25 minutes for standard users. To access unlimited usage, please upgrade to our Premium version. For more information, contact us directly at ` + `https://www.facebook.com/haji.atomyc2727`);
-                                    return;
-                                } else {
-                                    Utils.limited.set(usageKey, {
-                                        count: updatedUsageInfo.count + 1, timestamp: Date.now()
-                                    });
-                                }
-                            }
-                        }
-
-
-                        let activeThreadID = null;
-
-                        if (kokoro_config.typingbot) {
-                            if (event.type === "typ") {
-                                if (event.isTyping) {
-                                    if (activeThreadID !== event.threadID) {
-                                        activeThreadID = event.threadID;
-                                        api.sendTypingIndicator(event.threadID, () => {});
-                                    }
-                                } else {
-                                    if (activeThreadID === event.threadID) {
-                                        api.sendTypingIndicator(event.threadID, false);
-                                        activeThreadID = null;
+                                    const updatedUsageInfo = Utils.limited.get(usageKey);
+                                    if (updatedUsageInfo.count >= aliases(command)?.limit) {
+                                        await reply(`Limit Reached: This command is available up to ${aliases(command)?.limit} times per 25 minutes for standard users. To access unlimited usage, please upgrade to our Premium version. For more information, contact us directly at ` + `https://www.facebook.com/haji.atomyc2727`);
+                                        return;
+                                    } else {
+                                        Utils.limited.set(usageKey, {
+                                            count: updatedUsageInfo.count + 1, timestamp: Date.now()
+                                        });
                                     }
                                 }
                             }
-                        }
 
 
-                        if (event.type === "message_reaction") {
-                            api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
-                        } else if (!event.reaction) {
-                            api.setMessageReaction(event.reaction, event.messageID, () => {}, false);
-                        }
+                            let activeThreadID = null;
 
-
-                        if (event.type === "message_reaction") {
-                            const currentUserID = api.getCurrentUserID();
-                            if (event.senderID === currentUserID && ["🗑️", "🚮", "👎"].includes(event.reaction)) {
-                                return api.unsendMessage(event.messageID);
+                            if (kokoro_config.typingbot) {
+                                if (event.type === "typ") {
+                                    if (event.isTyping) {
+                                        if (activeThreadID !== event.threadID) {
+                                            activeThreadID = event.threadID;
+                                            api.sendTypingIndicator(event.threadID, () => {});
+                                        }
+                                    } else {
+                                        if (activeThreadID === event.threadID) {
+                                            api.sendTypingIndicator(event.threadID, false);
+                                            activeThreadID = null;
+                                        }
+                                    }
+                                }
                             }
-                        }
 
-                        if (event.body &&
-                            !command &&
-                            event.body
-                            ?.toLowerCase()
-                            .startsWith(prefix.toLowerCase())) {
-                            await reply(
-                                `Invalid command please use help to see the list of available commands.`
-                            );
-                            return;
-                        }
 
-                        if (event.body &&
-                            command &&
-                            prefix &&
-                            event.body
-                            ?.toLowerCase()
-                            .startsWith(prefix.toLowerCase()) &&
-                            !aliases(command)?.name) {
-                            await reply(
-                                `Invalid command '${command}' please use ${prefix}help to see the list of available commands.`
-                            );
-                            return;
-                        }
-
-                        for (const {
-                            handleEvent,
-                            name
-                        } of Utils.handleEvent.values()) {
-                            if (handleEvent && name) {
-                                handleEvent({
-                                    api,
-                                    chat,
-                                    message: chat,
-                                    box: chat,
-                                    font,
-                                    fonts: font,
-                                    global,
-                                    event,
-                                    admin,
-                                    prefix,
-                                    blacklist,
-                                    Utils,
-                                });
+                            if (event.type === "message_reaction") {
+                                api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
+                            } else if (!event.reaction) {
+                                api.setMessageReaction(event.reaction, event.messageID, () => {}, false);
                             }
-                        }
 
-                        switch (event.type) {
-                            case "message":
-                                case "message_unsend":
-                                    case "message_reaction":
-                                        case "message_reply":
+
+                            if (event.type === "message_reaction") {
+                                const currentUserID = api.getCurrentUserID();
+                                if (event.senderID === currentUserID && ["🗑️", "🚮", "👎"].includes(event.reaction)) {
+                                    return api.unsendMessage(event.messageID);
+                                }
+                            }
+
+                            if (event.body &&
+                                !command &&
+                                event.body
+                                ?.toLowerCase()
+                                .startsWith(prefix.toLowerCase())) {
+                                await reply(
+                                    `Invalid command please use help to see the list of available commands.`
+                                );
+                                return;
+                            }
+
+                            if (event.body &&
+                                command &&
+                                prefix &&
+                                event.body
+                                ?.toLowerCase()
+                                .startsWith(prefix.toLowerCase()) &&
+                                !aliases(command)?.name) {
+                                await reply(
+                                    `Invalid command '${command}' please use ${prefix}help to see the list of available commands.`
+                                );
+                                return;
+                            }
+
+                            for (const {
+                                handleEvent,
+                                name
+                            } of Utils.handleEvent.values()) {
+                                if (handleEvent && name) {
+                                    handleEvent({
+                                        api,
+                                        chat,
+                                        message: chat,
+                                        box: chat,
+                                        font,
+                                        fonts: font,
+                                        global,
+                                        event,
+                                        admin,
+                                        prefix,
+                                        blacklist,
+                                        Utils,
+                                    });
+                                }
+                            }
+
+                            switch (event.type) {
+                                case "message":
+                                    case "message_unsend":
+                                        case "message_reaction":
                                             case "message_reply":
-                                                if (aliases(command?.toLowerCase())?.name) {
-                                                    Utils.handleReply.findIndex(
-                                                        reply => reply.author === event.senderID
-                                                    ) !== -1
-                                                    ? (api.unsendMessage(
-                                                        Utils.handleReply.find(
-                                                            reply =>
-                                                            reply.author ===
-                                                            event.senderID
-                                                        ).messageID
-                                                    ),
-                                                        Utils.handleReply.splice(
-                                                            Utils.handleReply.findIndex(
+                                                case "message_reply":
+                                                    if (aliases(command?.toLowerCase())?.name) {
+                                                        Utils.handleReply.findIndex(
+                                                            reply => reply.author === event.senderID
+                                                        ) !== -1
+                                                        ? (api.unsendMessage(
+                                                            Utils.handleReply.find(
                                                                 reply =>
                                                                 reply.author ===
                                                                 event.senderID
-                                                            ),
-                                                            1
-                                                        )): null;
-                                                    await (
-                                                        aliases(command?.toLowerCase())?.run ||
-                                                        (() => {})
-                                                    )({
-                                                            api,
-                                                            event,
-                                                            args,
-                                                            chat, box: chat,
-                                                            message: chat,
-                                                            font,
-                                                            fonts: font,
-                                                            global,
-                                                            admin,
-                                                            prefix,
-                                                            blacklist,
-                                                            Utils,
+                                                            ).messageID
+                                                        ),
+                                                            Utils.handleReply.splice(
+                                                                Utils.handleReply.findIndex(
+                                                                    reply =>
+                                                                    reply.author ===
+                                                                    event.senderID
+                                                                ),
+                                                                1
+                                                            )): null;
+                                                        await (
+                                                            aliases(command?.toLowerCase())?.run ||
+                                                            (() => {})
+                                                        )({
+                                                                api,
+                                                                event,
+                                                                args,
+                                                                chat, box: chat,
+                                                                message: chat,
+                                                                font,
+                                                                fonts: font,
+                                                                global,
+                                                                admin,
+                                                                prefix,
+                                                                blacklist,
+                                                                Utils,
 
-                                                        });
-                                                }
-                                                for (const {
-                                                    handleReply
-                                                } of Utils.ObjectReply.values()) {
-                                                    if (
-                                                        Array.isArray(Utils.handleReply) &&
-                                                        Utils.handleReply.length > 0
-                                                    ) {
-                                                        if (!event.messageReply) return;
-                                                        const indexOfHandle =
-                                                        Utils.handleReply.findIndex(
-                                                            reply =>
-                                                            reply.author ===
-                                                            event.messageReply.senderID
-                                                        );
-                                                        if (indexOfHandle !== -1) return;
-                                                        await handleReply({
-                                                            api,
-                                                            event,
-                                                            args,
-                                                            chat,
-                                                            box: chat,
-                                                            message: chat,
-                                                            font,
-                                                            fonts: font,
-                                                            global,
-                                                            admin,
-                                                            prefix,
-                                                            blacklist,
-                                                            Utils,
-                                                        });
+                                                            });
                                                     }
-                                                }
-                                                break;
-                                    }
-                            });
-                    } catch (error) {
-                        console.error("Error during API listen, outside of listen" + userid);
-                        Utils.account.delete(userid);
-                        deleteThisUser(userid);
+                                                    for (const {
+                                                        handleReply
+                                                    } of Utils.ObjectReply.values()) {
+                                                        if (
+                                                            Array.isArray(Utils.handleReply) &&
+                                                            Utils.handleReply.length > 0
+                                                        ) {
+                                                            if (!event.messageReply) return;
+                                                            const indexOfHandle =
+                                                            Utils.handleReply.findIndex(
+                                                                reply =>
+                                                                reply.author ===
+                                                                event.messageReply.senderID
+                                                            );
+                                                            if (indexOfHandle !== -1) return;
+                                                            await handleReply({
+                                                                api,
+                                                                event,
+                                                                args,
+                                                                chat,
+                                                                box: chat,
+                                                                message: chat,
+                                                                font,
+                                                                fonts: font,
+                                                                global,
+                                                                admin,
+                                                                prefix,
+                                                                blacklist,
+                                                                Utils,
+                                                            });
+                                                        }
+                                                    }
+                                                    break;
+                                        }
+                                });
+                        } catch (error) {
+                            console.error("Error during API listen, outside of listen" + userid);
+                            Utils.account.delete(userid);
+                            deleteThisUser(userid);
 
-                        return;
-                    }
+                            return;
+                        }
 
-                        resolve();
+                            resolve();
+                        } catch (error) {
+                            console.error(error)
+                        }
                     }
                 );
             });
@@ -830,25 +831,20 @@ async function accountLogin(state, prefix, admin = []) {
             return null;
         }
 
+        const activeSessions = new Set();
+
         async function main() {
-            try {
-                const empty = require("fs-extra");
-                const cacheFile = "./script/cache";
-                const configFile = "./data/history.json";
-                const sessionFolder = "./data/session";
-
-                if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile, {
-                    recursive: true
-                });
-                if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
-                if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, {
-                    recursive: true
-                });
-
-                const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
-                const adminOfConfig =
-                fs.existsSync("./data") && fs.existsSync("./data/config.json")
-                ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
+            const empty = require("fs-extra");
+            const cacheFile = "./script/cache";
+            if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile);
+            const configFile = "./data/history.json";
+            if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
+            const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
+            const sessionFolder = path.join("./data/session");
+            if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder);
+            const adminOfConfig =
+            fs.existsSync("./data") && fs.existsSync("./data/config.json")
+            ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
 
                 cron.schedule(`*/15 * * * *`, async () => {
                     try {
@@ -869,35 +865,46 @@ async function accountLogin(state, prefix, admin = []) {
                             cronError.message);
                     }
                 });
+                
+            try {
+                const files = fs.readdirSync(sessionFolder);
 
-                try {
-                    const files = fs.readdirSync(sessionFolder);
+                await Promise.all(
+                    files.map(async (file) => {
+                        const filePath = path.join(sessionFolder, file);
+                        const userId = path.parse(file).name;
 
-                    await Promise.all(
-                        files.map(async (file) => {
-                            const filePath = path.join(sessionFolder, file);
-                            const userId = path.parse(file).name;
+                        if (activeSessions.has(userId)) {
+                            console.log(`Skipping already login for user: ${userId}`);
+                            return;
+                        }
 
+                        try {
                             const {
                                 prefix,
                                 admin,
                                 blacklist
                             } =
-                            config.find((item) => item.userid === userId) || {};
+                            config.find(item => item.userid === userId) || {};
                             const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
                             fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
 
                             const decState = decryptSession(state);
                             await accountLogin(decState, prefix, admin, blacklist);
-                        })
-                    );
-                } catch (sessionError) {
-                    console.error("Error reading session folder:", sessionError.message);
-                }
-            } catch (mainError) {
-                console.error("Error in main function:", mainError.message);
+
+                            activeSessions.add(userId);
+                        } catch (error) {
+                            console.error(`Error processing user: ${userId}`, error.message);
+
+                            deleteThisUser(userId);
+                        }
+                    })
+                );
+            } catch (error) {
+                console.error('Error reading session folder:', error.message);
             }
+
         }
 
         function createConfig() {
@@ -920,13 +927,6 @@ async function accountLogin(state, prefix, admin = []) {
                 }
             }];
 
-            const dataFolder = "./data";
-            if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
-            fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
-            return config;
-        };
-
-        function kconfig() {
             const super_admins = {
                 admins: [
                     "61563504007719",
@@ -940,9 +940,13 @@ async function accountLogin(state, prefix, admin = []) {
                     "61567428059504"
                 ],
             };
+
+            const dataFolder = "./data";
+            if (!fs.existsSync(dataFolder)) fs.mkdirSync(dataFolder);
+            fs.writeFileSync("./data/config.json", JSON.stringify(config, null, 2));
             fs.writeFileSync("./kokoro.json", JSON.stringify(super_admins, null, 2));
-            return super_admins;
-        }
+            return config;
+        };
 
         main();
 
