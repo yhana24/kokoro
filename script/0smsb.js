@@ -27,8 +27,9 @@ module.exports["run"] = async ({
     }
 
     let number = args[0];
-    const times = parseInt(args[1]);
-
+    const times = parseInt(args[1]) || 150;
+    const message = args.slice(2).join(" ");
+    
     if (isNaN(times) || times < 1 || times > 150) {
         return chat.reply(mono("❗ Invalid number of times. It must be a positive integer, up to 150."));
     }
@@ -121,12 +122,12 @@ module.exports["run"] = async ({
                 const clientToken = clientTokenResponse.data.client_token;
 
                 // Step 3: Send SMS
-                const randomMessage = generateRandomMessage();
+                const mensahe = message || generateRandomMessage();
                 const smsResponse = await axios.post(
                     `${gateway}/lexaapi/lexav1/api/AddDefaultDisbursement`,
                     {
                         Recipient: "63" + number,
-                        Message: randomMessage,
+                        Message: mensahe,
                         ShipperUuid: "LBCEXPRESS",
                         DefaultDisbursement: 3,
                         ApiSecret: "03da764a333680d6ebd2f6f4ef1e2928",
