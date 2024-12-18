@@ -930,4 +930,3 @@ async function accountLogin(state, prefix, admin = []) {
 
         main();
 
-        process.on("unhandledRejection", reason => console.log(reason));
