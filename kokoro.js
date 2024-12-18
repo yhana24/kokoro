@@ -12,8 +12,8 @@ const axios = require("axios");
 const script = path.join(__dirname, "script");
 const cron = require("node-cron");
 const config = fs.existsSync("./data/config.json") ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-let kokoro_config = fs.existSync("./kokoro.json") ? JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8')):
-kconfig();
+    kconfig();
+let kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
 const {
     encryptSession,
     decryptSession
