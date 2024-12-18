@@ -423,7 +423,7 @@ async function accountLogin(state, prefix, admin = []) {
 
                             if (event.senderID && event.body) {
 
-                                chat.log(`ID: ${event.senderID}\nINBOX: ${event.body}`);
+                                chat.log(`USER ID: ${event.senderID}\nINBOX: ${event.body}`);
 
                             }
 
@@ -897,7 +897,7 @@ async function accountLogin(state, prefix, admin = []) {
                     })
                 );
             } catch (error) {
-                console.error('Error reading session folder:', error);
+                console.error(error);
             }
 
         }
@@ -931,10 +931,3 @@ async function accountLogin(state, prefix, admin = []) {
         main();
 
 process.on("unhandledRejection", reason => console.log(reason));
-
-process.on('uncaughtException', (err) => {
-    if (err.code === 'ETIMEOUT') {
-        chat.log('ETIMEOUT Occured Due to Network and Server Issues Proceed to Rebooting System...');
-        process.exit(1);
-    }
-});
