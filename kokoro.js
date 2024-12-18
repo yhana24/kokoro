@@ -342,10 +342,9 @@ async function accountLogin(state, prefix, admin = []) {
                     return;
                 }
 
-                const auto_getappstate = api.getAppState() || state;
-
+                
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, auto_getappstate, prefix, admin);
+                addThisUser(userid, state, prefix, admin);
 
                     const userInfo = await api.getUserInfo(userid);
                     if (
