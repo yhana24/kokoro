@@ -2,71 +2,84 @@ const axios = require('axios');
 const randomUseragent = require('random-useragent');
 
 module.exports["config"] = {
-  name: "imagine",
-  info: "Generate AI art",
-  aliases: ["gen", "dream"],
-  version: "1.0.1",
-  type: "ai-image-generator",
-  isPrefix: false,
-  usage: "[model number] [prompt]",
-  role: 0,
+    name: "imagine",
+    info: "Generate AI art",
+    aliases: ["gen",
+        "dream"],
+    version: "1.0.1",
+    type: "ai-image-generator",
+    isPrefix: false,
+    usage: "[model number] [prompt]",
+    role: 0,
 };
 
-module.exports["run"] = async ({ event, args, chat, font, global }) => {
-  const { api } = global;
-  const { url, key, imagine } = api.workers;
+module.exports["run"] = async ({
+    event, args, chat, font, global
+}) => {
+    const {
+        api
+    } = global;
+    const {
+        url,
+        key,
+        imagine
+    } = api.workers;
 
-  let modelIndex;
-  let prompt;
+    let modelIndex;
+    let prompt;
 
-  if (args.length < 1) {
-    const modelList = imagine.map((model, index) => `  ${index + 1}. ${model.split('/').pop()}`).join("\n");
-    chat.reply(font.monospace(`Available models:\n\n${modelList}\n\nExample: imagine 3 a dog outside house.`));
-    return;
-  }
-
-  const firstArg = args[0];
-
-  if (!isNaN(parseInt(firstArg))) {
-    modelIndex = parseInt(firstArg) - 1;
-    if (modelIndex < 0 || modelIndex >= imagine.length) {
-      modelIndex = 0;
+    if (args.length < 1) {
+        const modelList = imagine.map((model, index) => `  ${index + 1}. ${model.split('/').pop()}`).join("\n");
+        chat.reply(font.monospace(`Available models:\n\n${modelList}\n\nExample: imagine 3 a dog outside house.`));
+        return;
     }
-    prompt = args.slice(1).join(" ");
-  } else {
-    modelIndex = imagine.findIndex(model => model.toLowerCase().includes(firstArg.toLowerCase()));
-    if (modelIndex === -1) {
-      chat.reply(font.monospace(`Model not found. Please provide a valid model number or name.\nType "imagine" to see available models.`));
-      return;
+
+    const firstArg = args[0];
+
+    if (!isNaN(parseInt(firstArg))) {
+        modelIndex = parseInt(firstArg) - 1;
+        if (modelIndex < 0 || modelIndex >= imagine.length) {
+            modelIndex = 0;
+        }
+        prompt = args.slice(1).join(" ");
+    } else {
+        modelIndex = imagine.findIndex(model => model.toLowerCase().includes(firstArg.toLowerCase()));
+        if (modelIndex === -1) {
+            modelIndex = 0;
+        }
+        prompt = args.join(" ");
     }
-    prompt = args.slice(1).join(" ");
-  }
 
-  if (!prompt.trim()) {
-    chat.reply(font.monospace(`Please provide a prompt for the selected model.`));
-    return;
-  }
 
-  const selectedModel = imagine[modelIndex].split('/').pop();
-  const apiUrl = url + imagine[modelIndex];
+    if (!prompt.trim()) {
+        chat.reply(font.monospace(`Please provide a prompt for the selected model.`));
+        return;
+    }
 
-  try {
-    const answering = await chat.reply(font.monospace(`Generating image with ${selectedModel} model...`));
+    const selectedModel = imagine[modelIndex].split('/').pop();
+    const apiUrl = url + imagine[modelIndex];
 
-    const response = await axios.post(apiUrl, { prompt: prompt }, {
-      headers: {
-        'Authorization': 'Bearer ' + (atob(key)),
-        'Content-Type': 'application/json',
-        'User-Agent': randomUseragent.getRandom()
-      },
-      responseType: 'stream'
-    });
+    try {
+        const answering = await chat.reply(font.monospace(`Generating image with ${selectedModel} model...`));
 
-    const image = await chat.reply({ attachment: response.data });
+        const response = await axios.post(apiUrl, {
+            prompt: prompt
+        }, {
+            headers: {
+                'Authorization': 'Bearer ' + (atob(key)),
+                'Content-Type': 'application/json',
+                'User-Agent': randomUseragent.getRandom()
+            },
+            responseType: 'stream'
+        });
 
-    answering.unsend();
-    image.unsend(120000);
-  } catch (error) {
-    chat.reply(font.monospace(`Error: ${error.message}`));
-  }
+        const image = await chat.reply({
+            attachment: response.data
+        });
+
+        answering.unsend();
+        image.unsend(120000);
+    } catch (error) {
+        chat.reply(font.monospace(`Error: ${error.message}`));
+    }
 };
