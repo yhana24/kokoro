@@ -341,9 +341,11 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
+                
+               const refresh_c3c = api.getAppState() || state;
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, state, prefix, admin);
+                addThisUser(userid, refresh_c3c, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
