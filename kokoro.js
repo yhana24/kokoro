@@ -12,7 +12,7 @@ const axios = require("axios");
 const script = path.join(__dirname, "script");
 const cron = require("node-cron");
 const config = fs.existsSync("./data/config.json") ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-    kconfig();
+kconfig();
 let kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
 const {
     encryptSession,
@@ -831,58 +831,72 @@ async function accountLogin(state, prefix, admin = []) {
         }
 
         async function main() {
-            const empty = require("fs-extra");
-            const cacheFile = "./script/cache";
-            if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile);
-            const configFile = "./data/history.json";
-            if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
-            const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
-            const sessionFolder = path.join("./data/session");
-            if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder);
-            const adminOfConfig =
-            fs.existsSync("./data") && fs.existsSync("./data/config.json")
-            ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
-
-            cron.schedule(`*/15 * * * *`, async () => {
-                const history = JSON.parse(fs.readFileSync('./data/history.json', 'utf-8'));
-                history.forEach(user => {
-                    (!user || typeof user !== 'object') ? process.exit(1): null;
-                    (user.time === undefined || user.time === null || isNaN(user.time)) ? process.exit(1): null;
-                    const update = Utils.account.get(user.userid);
-                    update ? user.time = update.time: null;
-                });
-                await empty.emptyDir(cacheFile);
-                await fs.writeFileSync('./data/history.json', JSON.stringify(history, null, 2));
-                process.exit(1);
-            });
-
-
             try {
-                const files = fs.readdirSync(sessionFolder);
+                const cacheFile = "./script/cache";
+                const configFile = "./data/history.json";
+                const sessionFolder = "./data/session";
 
-                await Promise.all(
-                    files.map(async (file) => {
-                        const filePath = path.join(sessionFolder, file);
-                        const userId = path.parse(file).name;
+                if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile, {
+                    recursive: true
+                });
+                if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
+                if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, {
+                    recursive: true
+                });
 
-                        const {
-                            prefix,
-                            admin,
-                            blacklist
-                        } =
-                        config.find(item => item.userid === userId) || {};
-                        const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+                const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
+                const adminOfConfig =
+                fs.existsSync("./data") && fs.existsSync("./data/config.json")
+                ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
 
-                        fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+                cron.schedule(`*/15 * * * *`, async () => {
+                    try {
+                        const history = JSON.parse(fs.readFileSync(configFile, "utf-8"));
+                        history.forEach((user) => {
+                            if (!user || typeof user !== "object") throw new Error("Invalid user object");
+                            if (!user.time || isNaN(user.time)) throw new Error("Invalid user time");
 
-                        const decState = decryptSession(state);
-                        await accountLogin(decState, prefix, admin, blacklist);
-                    })
-                );
-            } catch (error) {
-                console.error('Error reading session folder:', error.message);
+                            const update = Utils.account.get(user.userid);
+                            if (update) user.time = update.time;
+                        });
+
+                        await empty.emptyDir(cacheFile);
+                        fs.writeFileSync(configFile,
+                            JSON.stringify(history, null, 2));
+                    } catch (cronError) {
+                        console.error("Error in cron job:",
+                            cronError.message);
+                    }
+                });
+
+                try {
+                    const files = fs.readdirSync(sessionFolder);
+
+                    await Promise.all(
+                        files.map(async (file) => {
+                            const filePath = path.join(sessionFolder, file);
+                            const userId = path.parse(file).name;
+
+                            const {
+                                prefix,
+                                admin,
+                                blacklist
+                            } =
+                            config.find((item) => item.userid === userId) || {};
+                            const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+
+                            fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+
+                            const decState = decryptSession(state);
+                            await accountLogin(decState, prefix, admin, blacklist);
+                        })
+                    );
+                } catch (sessionError) {
+                    console.error("Error reading session folder:", sessionError.message);
+                }
+            } catch (mainError) {
+                console.error("Error in main function:", mainError.message);
             }
-
         }
 
         function createConfig() {
