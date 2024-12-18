@@ -890,7 +890,6 @@ async function accountLogin(state, prefix, admin = []) {
                             return;
                         }
 
-                        try {
                             const {
                                 prefix,
                                 admin,
@@ -905,9 +904,6 @@ async function accountLogin(state, prefix, admin = []) {
                             await accountLogin(decState, prefix, admin, blacklist);
 
                             activeSessions.add(userId);
-                        } catch (error) {
-                            return null;
-                        }
                     })
                 );
             } catch (error) {
