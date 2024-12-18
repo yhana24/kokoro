@@ -832,6 +832,7 @@ async function accountLogin(state, prefix, admin = []) {
 
         async function main() {
             try {
+                const empty = require("fs-extra");
                 const cacheFile = "./script/cache";
                 const configFile = "./data/history.json";
                 const sessionFolder = "./data/session";
