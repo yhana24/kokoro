@@ -39,7 +39,6 @@
         "bluebird": "^3.7.2",
         "body-parser": "^1.20.2",
         "canvacord": "^6.0.2",
-        "canvas": "^2.11.2",
         "chalk": "^3.0.0",
         "cheerio": "^0.22.0",
         "child_process": "^1.0.2",
