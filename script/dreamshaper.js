@@ -1,7 +1,7 @@
 const axios = require('axios');
 const randomUseragent = require('random-useragent');
 
-module.exports.config = {
+module.exports["config"] = {
   name: "imagine",
   info: "Generate AI art",
   aliases: ["gen", "dream"],
@@ -12,7 +12,7 @@ module.exports.config = {
   role: 0,
 };
 
-module.exports.run = async ({ event, args, chat, font, global }) => {
+module.exports["run"] = async ({ event, args, chat, font, global }) => {
   const { api } = global;
   const { url, key, imagine } = api.workers;
 
@@ -26,6 +26,7 @@ module.exports.run = async ({ event, args, chat, font, global }) => {
   }
 
   const firstArg = args[0];
+
   if (!isNaN(parseInt(firstArg))) {
     modelIndex = parseInt(firstArg) - 1;
     if (modelIndex < 0 || modelIndex >= imagine.length) {
@@ -33,11 +34,12 @@ module.exports.run = async ({ event, args, chat, font, global }) => {
     }
     prompt = args.slice(1).join(" ");
   } else {
-    modelIndex = imagine.findIndex(model => model.includes(`@cf/${firstArg.toLowerCase()}`));
+    modelIndex = imagine.findIndex(model => model.toLowerCase().includes(firstArg.toLowerCase()));
     if (modelIndex === -1) {
-      modelIndex = 0;
+      chat.reply(font.monospace(`Model not found. Please provide a valid model number or name.\nType "imagine" to see available models.`));
+      return;
     }
-    prompt = args.join(" ");
+    prompt = args.slice(1).join(" ");
   }
 
   if (!prompt.trim()) {
