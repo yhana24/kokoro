@@ -73,11 +73,3 @@ function start() {
 
 start();
 
-process.on("unhandledRejection", reason => console.log(reason));
-
-process.on('uncaughtException', (err) => {
-    if (err.code === 'ETIMEOUT') {
-        chat.log('ETIMEOUT Occured Due to Network and Server Issues Proceed to Rebooting System...');
-        process.exit(1);
-    }
-});
