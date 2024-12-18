@@ -830,7 +830,6 @@ async function accountLogin(state, prefix, admin = []) {
             return null;
         }
 
-        const activeSessions = new Set();
 
         async function main() {
             const empty = require("fs-extra");
@@ -888,26 +887,20 @@ async function accountLogin(state, prefix, admin = []) {
                             return;
                         }
 
-                        try {
-                            const {
-                                prefix,
-                                admin,
-                                blacklist
-                            } =
-                            config.find(item => item.userid === userId) || {};
-                            const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+                        const {
+                            prefix,
+                            admin,
+                            blacklist
+                        } =
+                        config.find(item => item.userid === userId) || {};
+                        const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
-                            fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+                        fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
 
-                            const decState = decryptSession(state);
-                            await accountLogin(decState, prefix, admin, blacklist);
+                        const decState = decryptSession(state);
+                        await accountLogin(decState, prefix, admin, blacklist);
 
-                            activeSessions.add(userId);
-                        } catch (error) {
-                            console.error(`Error processing user: ${userId}`, error.message);
-
-                            deleteThisUser(userId);
-                        }
+                        activeSessions.add(userId);
                     })
                 );
             } catch (error) {
