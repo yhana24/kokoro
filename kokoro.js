@@ -882,11 +882,6 @@ async function accountLogin(state, prefix, admin = []) {
                         const filePath = path.join(sessionFolder, file);
                         const userId = path.parse(file).name;
 
-                        if (activeSessions.has(userId)) {
-                            console.log(`Skipping already login for user: ${userId}`);
-                            return;
-                        }
-
                         const {
                             prefix,
                             admin,
