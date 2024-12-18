@@ -7,10 +7,14 @@ const log = require("npmlog");
 module.exports = ({ api, font }) => {
     const mono = txt => font.monospace ? font.monospace(txt) : txt;
 
+    // Load configuration file
     const configPath = path.resolve(__dirname, '../kokoro.json');
     let config;
     try {
         config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        if (!config || typeof config !== 'object') {
+            throw new Error("Invalid configuration file.");
+        }
     } catch (error) {
         console.error("Error reading config file:", error);
         return;
@@ -18,6 +22,7 @@ module.exports = ({ api, font }) => {
 
     const timezone = config.timezone || "UTC";
 
+    // Greetings messages based on time of day
     const greetings = {
         morning: ["Good morning! Have a great day!", "Rise and shine! Good morning!"],
         afternoon: ["Good afternoon! Keep up the great work!", "Time to eat something!"],
@@ -25,15 +30,22 @@ module.exports = ({ api, font }) => {
         night: ["Good night! Rest well!", "Tulog na kayo!"]
     };
 
+    // Get a random greeting for a specific time of day
     function greetRandom(timeOfDay) {
         const greetingsList = greetings[timeOfDay] || [];
-        return greetingsList[Math.floor(Math.random() * greetingsList.length)];
+        return greetingsList.length > 0
+            ? greetingsList[Math.floor(Math.random() * greetingsList.length)]
+            : "Hello!";
     }
 
+    // Send greetings to threads
     async function greetThreads(timeOfDay) {
         try {
             const msgTxt = greetRandom(timeOfDay);
             const threads = await api.getThreadList(5, null, ['INBOX']);
+            if (!threads || !Array.isArray(threads)) {
+                throw new Error("Invalid thread list.");
+            }
             for (const thread of threads) {
                 if (thread.isGroup) {
                     await api.sendMessage(mono(msgTxt), thread.threadID).catch();
@@ -44,15 +56,20 @@ module.exports = ({ api, font }) => {
         }
     }
 
+    // Task: Restart the system
     async function restart() {
         log.info("CRON", "Restarting...");
         process.exit(0);
     }
 
+    // Task: Clear chat
     async function clearChat() {
         try {
             log.info("CRON", "Clearing chat...");
             const threads = await api.getThreadList(25, null, ['INBOX']);
+            if (!threads || !Array.isArray(threads)) {
+                throw new Error("Invalid thread list.");
+            }
             for (const thread of threads) {
                 if (!thread.isGroup) {
                     await api.deleteThread(thread.threadID).catch();
@@ -63,10 +80,14 @@ module.exports = ({ api, font }) => {
         }
     }
 
+    // Task: Accept pending messages
     async function acceptPending() {
         try {
             log.info("CRON", "Accepting pending messages...");
             const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
+            if (!pendingThreads || !Array.isArray(pendingThreads)) {
+                throw new Error("Invalid pending thread list.");
+            }
             for (const thread of pendingThreads) {
                 await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch();
             }
@@ -75,6 +96,7 @@ module.exports = ({ api, font }) => {
         }
     }
 
+    // Task: Post motivational quotes
     async function motivation() {
         try {
             log.info("CRON", "Posting motivational quotes...");
@@ -92,10 +114,19 @@ module.exports = ({ api, font }) => {
     }
 
     const scheduleGreetings = (timeOfDay, hours) => {
+        if (!greetings[timeOfDay]) {
+            console.error(`Invalid time of day: ${timeOfDay}`);
+            return;
+        }
         hours.forEach(hour => {
             cron.schedule(`0 ${hour} * * *`, () => greetThreads(timeOfDay), { timezone });
         });
     };
+
+    if (!config.cronJobs || typeof config.cronJobs !== 'object') {
+        console.error("Invalid or missing cron jobs configuration.");
+        return;
+    }
 
     Object.entries(config.cronJobs).forEach(([key, job]) => {
         if (!job.enabled) return;
@@ -108,6 +139,8 @@ module.exports = ({ api, font }) => {
             const task = taskMap[key];
             if (task) {
                 cron.schedule(job.cronExpression, task, { timezone });
+            } else {
+                console.error(`Unknown task: ${key}`);
             }
         }
     });
