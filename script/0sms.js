@@ -44,7 +44,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
     try {
         // Step 1: Generate JWT
         const jwtResponse = await axios.post(
-            `${hajime}/lexaapi/lexav1/api/GenerateJWTToken`,
+            `${gateway}/lexaapi/lexav1/api/GenerateJWTToken`,
             {
                 Client: "2E1EEB",
                 email: "natsumii@gmail.com",
@@ -60,11 +60,11 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                     'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
                     'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
                     'sec-ch-ua-mobile': "?1",
-                    'origin': hajime,
+                    'origin': main,
                     'sec-fetch-site': "cross-site",
                     'sec-fetch-mode': "cors",
                     'sec-fetch-dest': "empty",
-                    'referer': hajime,
+                    'referer': main,
                     'accept-language': "en-US,en;q=0.9,fil;q=0.8",
                     'priority': "u=1, i",
                 },
@@ -73,7 +73,6 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
 
         const jwtToken = jwtResponse.data.trim().replace(/"/g, '');
         
-        chat.log(jwtToken);
 
         const clientTokenResponse = await axios.get(`${gateway}/promotextertoken/generate_client_token`, {
             headers: {
@@ -97,8 +96,6 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
 
         const clientToken = clientTokenResponse.data.client_token;
         
-        chat.log(clientToken);
-
         // Step 3: Send SMS
         const smsResponse = await axios.post(
             `${gateway}/lexaapi/lexav1/api/AddDefaultDisbursement`,
