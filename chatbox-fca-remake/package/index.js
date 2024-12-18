@@ -459,7 +459,7 @@ function scheduleNextRefresh() {
     }, Math.random() * 172800000); // Refresh within a random time, up to 48 hours
 }
 
-scheduleRefresh();
+scheduleNextRefresh();
 
 return {
   ctx: ctx,
