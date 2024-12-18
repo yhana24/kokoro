@@ -14,7 +14,7 @@ async function kokoro(req, res) {
     }
 
     try {
-        const response = await axios.get(hajime.api.kokoro[0] + `/google?prompt=${query}&uid=${senderID}`);
+        const response = await axios.get(hajime.api.kokoro[0] + `/google?prompt=${query}&uid=${senderID}&model=gemini-1.5-flash`);
         res.json(response.data);
     } catch (error) {
         const errorMessage = error.response && error.response.data && error.response.data.error
