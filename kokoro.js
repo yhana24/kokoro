@@ -343,7 +343,7 @@ async function accountLogin(state, prefix, admin = []) {
                 }
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, api.getAppState || state, prefix, admin);
+                addThisUser(userid, state, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
@@ -897,7 +897,7 @@ async function accountLogin(state, prefix, admin = []) {
                     })
                 );
             } catch (error) {
-                console.error('Error reading session folder:', error.message);
+                console.error('Error reading session folder:', error);
             }
 
         }
