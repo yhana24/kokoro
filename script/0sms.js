@@ -116,6 +116,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                     'sec-ch-ua-platform': "\"Android\"",
                     'authorization': `Bearer ${jwtToken}`,
                     'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
+                     'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
                     'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
                     'sec-ch-ua-mobile': "?1",
                     'origin': main,
