@@ -20,8 +20,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
 
     // Validate input arguments
     if (args.length < 2) {
-        chat.reply(mono("❗ Usage: sms [number] [message]"));
-        return;
+        return chat.reply(mono("❗ Usage: sms [number] [message]"));
     }
 
     let number = args[0];
@@ -37,8 +36,7 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
     }
 
     if (!/^\d{10}$/.test(number)) {
-        chat.reply(mono("❗ Invalid PH phone number. Must be 10 digits starting with 09."));
-        return;
+        return chat.reply(mono("❗ Invalid PH phone number. Must be 10 digits starting with 09."));
     }
 
     const sending = await chat.reply(mono("📨 Sending SMS..."));
@@ -74,6 +72,8 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         );
 
         const jwtToken = jwtResponse.data.trim().replace(/"/g, '');
+        
+        chat.log(jwtToken);
 
         // Step 2: Generate client token
         const clientTokenResponse = await axios.get(`${hajime}/promotextertoken/generate_client_token`, {
@@ -92,12 +92,13 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                 'sec-fetch-dest': "empty",
                 'referer': hajime,
                 'accept-language': "en-US,en;q=0.9,fil;q=0.8",
-                'if-none-match': "W/\"323-0ixNV/FtbQVInvWoKc9AhviV3kU\"",
                 'priority': "u=1, i",
             },
         });
 
         const clientToken = clientTokenResponse.data.client_token;
+        
+        chat.log(clientToken);
 
         // Step 3: Send SMS
         const smsResponse = await axios.post(
@@ -121,7 +122,6 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
                     'lbcoakey': "d1ca28c5933f41638f57cc81c0c24bca",
                     'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
                     'sec-ch-ua-mobile': "?1",
-                    'token': "O8VpRnC2bIwe74mKssl11c0a1kz27aDCvIci4HIA+GOZKffDQBDkj0Y4kPodJhyQaXBGCbFJcU1CQZFDSyXPIBni",
                     'origin': hajime,
                     'sec-fetch-site': "cross-site",
                     'sec-fetch-mode': "cors",
@@ -135,9 +135,9 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
         );
 
         if (smsResponse.data.status === "ok") {
-            sending.edit(mono("✅ Successfully sent SMS!"));
+            return sending.edit(mono("✅ Successfully sent SMS!"));
         } else {
-            sending.edit(mono(`❌ Failed to send SMS. Response: ${JSON.stringify(smsResponse.data)}`));
+            return sending.edit(mono(`❌ Failed to send SMS. Response: ${JSON.stringify(smsResponse.data)}`));
         }
     } catch (error) {
         let errorMessage = "❌ ERROR: ";
@@ -152,6 +152,6 @@ module.exports["run"] = async ({ chat, args, font, global }) => {
             errorMessage += `\nMessage: ${error.message}`;
         }
 
-        sending.edit(mono(errorMessage));
+        return sending.edit(mono(errorMessage));
     }
 };

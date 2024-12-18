@@ -1,7 +1,5 @@
 const axios = require('axios');
-const {
-    google
-} = require('googleapis');
+const { google } = require('googleapis');
 const mime = require('mime-types');
 const getFBInfo = require("@xaviabot/fb-downloader");
 const cheerio = require('cheerio');
@@ -16,72 +14,43 @@ module.exports["config"] = {
 };
 
 const streamFile = async (url, chat) => {
-    const {
-        data
-    } = await axios.get(url, {
-            responseType: 'stream'
-        });
-    chat.reply({
-        attachment: data
-    });
+    const { data } = await axios.get(url, { responseType: 'stream' });
+    chat.reply({ attachment: data });
 };
 
 const handleTikTok = async (link, chat, mono) => {
-    const {
-        data
-    } = await axios.post('https://www.tikwm.com/api/', {
-            url: link
-        });
+    const { data } = await axios.post('https://www.tikwm.com/api/', { url: link });
     if (!data.data?.play) throw new Error('Invalid response from TikTok API');
     await chat.reply(mono(`TikTok Video Link Detected!\n\nContent: ${data.data.title}\n\nLikes: ${data.data.digg_count}\n\nComments: ${data.data.comment_count}.`));
     await streamFile(data.data.play, chat);
 };
 
 const handleGoogleDrive = async (link, chat, apiKey, mono) => {
-    const drive = google.drive({
-        version: 'v3', auth: apiKey
-    });
+    const drive = google.drive({ version: 'v3', auth: apiKey });
     const fileId = link.match(/(?:file\/d\/|open\?id=)([\w-]{33}|\w{19})/)[1];
-
-    const {
-        data
-    } = await drive.files.get({
-            fileId, fields: 'name, mimeType'
-        });
+    const { data } = await drive.files.get({ fileId, fields: 'name, mimeType' });
     const destPath = path.join(__dirname, `${data.name}${mime.extension(data.mimeType) || ''}`);
-
     const dest = fs.createWriteStream(destPath);
-    const resMedia = await drive.files.get({
-        fileId, alt: 'media'
-    }, {
-        responseType: 'stream'
-    });
+    const resMedia = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
     resMedia.data.pipe(dest);
-
     chat.reply(mono(`Google Drive Link\n\nFilename: ${data.name}`));
 
     dest.on('finish', async () => {
-        await chat.reply({
-            attachment: dest
-        });
+        await chat.reply({ attachment: dest });
         fs.unlinkSync(destPath);
     });
 };
 
 const handleYouTube = async (link, chat, mono) => {
     const html = (await axios.get(`https://www.helloconverter.com/download?url=${link}&token=665bd17a47ad721615f5dedd7b173f186abca42b8e1cfd0f3a4873e8372d0bb6`, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0'
-        }
+        headers: { 'User-Agent': 'Mozilla/5.0' }
     })).data;
-
     const $ = cheerio.load(html);
     const video = $('td.t-content1').map((_, el) => ({
         resolution: $(el).text().trim(),
         size: $(el).next().next().text().trim(),
         downloadUrl: $(el).next().next().next().find('a').attr('href')
     })).get()[0];
-
     if (video) {
         await chat.reply(mono(`YouTube Video Link Detected!\n\nResolution: ${video.resolution}\n\nSize: ${video.size}`));
         await streamFile(video.downloadUrl, chat);
@@ -94,10 +63,8 @@ const handleFacebook = async (link, chat, mono) => {
     await streamFile(result.sd, chat);
 };
 
-module.exports["handleEvent"] = async ({
-    chat, event, font
-}) => {
-    const mono = txt => font.monospace(txt);
+module.exports["handleEvent"] = async ({ chat, event, font }) => {
+    const mono = (txt) => font.monospace(txt);
     const message = event.body;
     if (!message) return;
 
@@ -109,27 +76,39 @@ module.exports["handleEvent"] = async ({
         youtube: /https:\/\/(www\.)?(youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)/g
     };
 
+    // Collect links for batch processing
+    const links = [];
     for (const [key, regex] of Object.entries(regexPatterns)) {
         let match;
         while ((match = regex.exec(message)) !== null) {
-            try {
-                const handlers = {
-                    tiktok: handleTikTok,
-                    drive: handleGoogleDrive,
-                    facebook: handleFacebook,
-                    youtube: handleYouTube
-                };
-                await handlers[key](match[0], chat, key === 'drive' ? apiKey: mono);
-            } catch (error) {
-                console.log(`Error processing ${key} link: ${error.message}`);
-            }
+            links.push({ type: key, link: match[0] });
+        }
+    }
+
+    if (links.length === 0) return; // No links detected
+
+    // Limit to only 3 links
+    const limitedLinks = links.slice(0, 3);
+    await chat.reply(mono(`Detected ${limitedLinks.length} links. Processing them one by one...`));
+
+    // Process each link sequentially (up to 3)
+    for (const { type, link } of limitedLinks) {
+        try {
+            const handlers = {
+                tiktok: handleTikTok,
+                drive: handleGoogleDrive,
+                facebook: handleFacebook,
+                youtube: handleYouTube
+            };
+            await handlers[type](link, chat, type === 'drive' ? apiKey : mono);
+        } catch (error) {
+            console.log(`Error processing ${type} link: ${error.message}`);
+            await chat.reply(mono(`❌ Error processing link: ${link}\n\nError: ${error.message}`));
         }
     }
 };
 
-module.exports["run"] = async ({
-    chat, font
-}) => {
-    const mono = txt => font.monospace(txt);
+module.exports["run"] = async ({ chat, font }) => {
+    const mono = (txt) => font.monospace(txt);
     chat.reply(mono("This is an event process that automatically downloads videos from YouTube, TikTok, and Facebook. Just send me the link, and I will download it directly."));
 };
