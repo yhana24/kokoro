@@ -45,13 +45,13 @@ module.exports = ({ api, font }) => {
     }
 
     async function restart() {
-        log.info("Restarting...");
+        log.info("CRON", "Restarting...");
         process.exit(0);
     }
 
     async function clearChat() {
         try {
-            log.info("Clearing chat...");
+            log.info("CRON", "Clearing chat...");
             const threads = await api.getThreadList(25, null, ['INBOX']);
             for (const thread of threads) {
                 if (!thread.isGroup) {
@@ -65,7 +65,7 @@ module.exports = ({ api, font }) => {
 
     async function acceptPending() {
         try {
-            log.info("Accepting pending messages...");
+            log.info("CRON", "Accepting pending messages...");
             const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
             for (const thread of pendingThreads) {
                 await api.sendMessage(mono('📨 Automatically approved by our system.'), thread.threadID).catch();
@@ -77,7 +77,7 @@ module.exports = ({ api, font }) => {
 
     async function motivation() {
         try {
-            log.info("Posting motivational quotes...");
+            log.info("CRON", "Posting motivational quotes...");
             const response = await axios.get("https://raw.githubusercontent.com/JamesFT/Database-Quotes-JSON/master/quotes.json");
             const quotes = response.data;
             if (!Array.isArray(quotes) || quotes.length === 0) {
