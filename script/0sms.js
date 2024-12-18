@@ -14,7 +14,7 @@ module.exports["config"] = {
     cd: 10,
 };
 
-module.exports["run"] = async ({ chat, args, font, global }) => {
+module.exports["run"] = async ({ chat, args, font, global, event }) => {
     const main = global.api.sms[0];
     const gateway = global.api.sms[1];
     
