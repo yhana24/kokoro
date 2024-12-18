@@ -417,7 +417,9 @@ async function accountLogin(state, prefix, admin = []) {
                     try {
                         api.listenMqtt(async (error, event) => {
                             if (error) {
-                                if (error === "Connection closed.") {}
+                                if (error === "Connection closed.") {
+                                 console.error(`Error during API listen: ${error}`, userid);
+                                }
                                 console.log(error);
                             }
 
@@ -904,7 +906,7 @@ async function accountLogin(state, prefix, admin = []) {
 
                             activeSessions.add(userId);
                         } catch (error) {
-                            deleteThisUser(userId);
+                            return null;
                         }
                     })
                 );
