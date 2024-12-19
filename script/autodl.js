@@ -85,13 +85,9 @@ module.exports["handleEvent"] = async ({ chat, event, font }) => {
         }
     }
 
-    if (links.length === 0) return; // No links detected
-
-    // Limit to only 3 links
+    if (links.length === 0) return; 
     const limitedLinks = links.slice(0, 3);
-    await chat.reply(mono(`Detected ${limitedLinks.length} links. Processing them one by one...`));
 
-    // Process each link sequentially (up to 3)
     for (const { type, link } of limitedLinks) {
         try {
             const handlers = {
