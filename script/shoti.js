@@ -6,8 +6,8 @@ const metadata = {
     aliases: ["shawty"],
     isPrefix: false,
     version: "1.0.0",
-    isPremium: false,
-    limit: 3,
+    isPremium: true,
+    limit: 20,
     credits: "Kenneth Panio"
 };
 
