@@ -98,8 +98,7 @@ module.exports["handleEvent"] = async ({ chat, event, font }) => {
             };
             await handlers[type](link, chat, type === 'drive' ? apiKey : mono);
         } catch (error) {
-            console.log(`Error processing ${type} link: ${error.message}`);
-            await chat.reply(mono(`❌ Error processing link: ${link}\n\nError: ${error.message}`));
+            chat.log(`Error processing ${type} link: ${error.message}`);
         }
     }
 };

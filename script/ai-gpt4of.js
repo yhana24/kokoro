@@ -67,7 +67,7 @@ module.exports["run"] = async ({
         "frequency_penalty": 0,
         "top_p": 1,
         "max_tokens": 28000,
-        "captchaToken": captchaToken
+        "captchaToken": captchaToken || "eyJhbGdvcml0aG0iOiJTSEEtNTEyIiwiY2hhbGxlbmdlIjoiOWIzNGEzZGRjMzUyY2NiMGM2N2NlMTY2MmJkMGI1ZDY1NTA5MTM3YzI1OGVlYTNlNjI2ZThhYzNhZWI2MDBlNzAxMjAwMzZjYjU2YmYxNzk4NjU5ODUyY2YyN2Y4N2Q2MDBmNjBiZmM4NDcyZjZmMmIyYWI0NmI0MmQ1YmUyYTYiLCJudW1iZXIiOjg4NjM2Nywic2FsdCI6IjRmNDk2MzY0ZmQ4N2M3MzAxOTk0YTYwYjIzYmU3MWE2MDgyYTExMjc/ZXhwaXJlcz0xNzM0NTc5OTQ5Iiwic2lnbmF0dXJlIjoiZjZhZjk5M2NmYmFmMGZlNGY0Nzk0ZGZhOWRkMmZlZTVkMzQ0N2NjYzVkYzljNjRiNjNkZTE2YmVmM2RjMjhkZjgxYmJmYjI4OWE5NTVhMWIwNzgyZjVlNDdiZjk1ZDU1YzYxNTUyMWI4MGE4ZDA4NTI0YjI3NTMwNzZlMGE5YjEiLCJ0b29rIjoxODYwMX0="
     };
 
     try {
