@@ -48,10 +48,9 @@ module.exports["run"] = async ({
     const apiUrl = global.api.eqing + `/api/openai/v1/chat/completions`;
 
     const headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OTVjMGQxNS03NzJjLTQ5ODAtOGQ3NS0xZGNhNTUyM2I3NmQiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzI5MDMyOTgwLCJpYXQiOjE3Mjg2NzI5ODAsImVtYWlsIjoibGtwYW5pbzI1QGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZ2l0aHViIiwicHJvdmlkZXJzIjpbImdpdGh1YiJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9hdmF0YXJzLmdpdGh1YnVzZXJjb250ZW50LmNvbS91LzE1MjI2NzE0MD92PTQiLCJlbWFpbCI6ImxrcGFuaW8yNUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiSGFqaW1lIFl1dXRhIiwiaXNzIjoiaHR0cHM6Ly9hcGkuZ2l0aHViLmNvbSIsIm5hbWUiOiJIYWppbWUgWXV1dGEiLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInByZWZlcnJlZF91c2VybmFtZSI6ImF0b21pYy16ZXJvIiwicHJvdmlkZXJfaWQiOiIxNTIyNjcxNDAiLCJzdWIiOiIxNTIyNjcxNDAiLCJ1c2VyX25hbWUiOiJhdG9taWMtemVybyJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im9hdXRoIiwidGltZXN0YW1wIjoxNzI4NjcyOTgwfV0sInNlc3Npb25faWQiOiJiZjcxY2ExNS1iMTIxLTQ3OTUtOTMxMS0xOTk0NzgxOTJmZDEiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.Xinz-t88HO0xKZlmFaPMGIM_PZpVdRgCu-xU9MOaQlI',
         'Content-Type': 'application/json',
         'x-requested-with': 'XMLHttpRequest',
-        'useSearch': 'false',
+        'useSearch': 'undefined',
         'x-guest-id': 'LKkc7B5BECo6_nFmyLhFw',
         'accept': 'application/json',
         'User-Agent': 'Mozilla/5.0',
@@ -67,7 +66,7 @@ module.exports["run"] = async ({
         "frequency_penalty": 0,
         "top_p": 1,
         "max_tokens": 28000,
-        "captchaToken": captchaToken || "eyJhbGdvcml0aG0iOiJTSEEtNTEyIiwiY2hhbGxlbmdlIjoiOWIzNGEzZGRjMzUyY2NiMGM2N2NlMTY2MmJkMGI1ZDY1NTA5MTM3YzI1OGVlYTNlNjI2ZThhYzNhZWI2MDBlNzAxMjAwMzZjYjU2YmYxNzk4NjU5ODUyY2YyN2Y4N2Q2MDBmNjBiZmM4NDcyZjZmMmIyYWI0NmI0MmQ1YmUyYTYiLCJudW1iZXIiOjg4NjM2Nywic2FsdCI6IjRmNDk2MzY0ZmQ4N2M3MzAxOTk0YTYwYjIzYmU3MWE2MDgyYTExMjc/ZXhwaXJlcz0xNzM0NTc5OTQ5Iiwic2lnbmF0dXJlIjoiZjZhZjk5M2NmYmFmMGZlNGY0Nzk0ZGZhOWRkMmZlZTVkMzQ0N2NjYzVkYzljNjRiNjNkZTE2YmVmM2RjMjhkZjgxYmJmYjI4OWE5NTVhMWIwNzgyZjVlNDdiZjk1ZDU1YzYxNTUyMWI4MGE4ZDA4NTI0YjI3NTMwNzZlMGE5YjEiLCJ0b29rIjoxODYwMX0="
+        "captchaToken": "eyJhbGdvcml0aG0iOiJTSEEtNTEyIiwiY2hhbGxlbmdlIjoiOWIzNGEzZGRjMzUyY2NiMGM2N2NlMTY2MmJkMGI1ZDY1NTA5MTM3YzI1OGVlYTNlNjI2ZThhYzNhZWI2MDBlNzAxMjAwMzZjYjU2YmYxNzk4NjU5ODUyY2YyN2Y4N2Q2MDBmNjBiZmM4NDcyZjZmMmIyYWI0NmI0MmQ1YmUyYTYiLCJudW1iZXIiOjg4NjM2Nywic2FsdCI6IjRmNDk2MzY0ZmQ4N2M3MzAxOTk0YTYwYjIzYmU3MWE2MDgyYTExMjc/ZXhwaXJlcz0xNzM0NTc5OTQ5Iiwic2lnbmF0dXJlIjoiZjZhZjk5M2NmYmFmMGZlNGY0Nzk0ZGZhOWRkMmZlZTVkMzQ0N2NjYzVkYzljNjRiNjNkZTE2YmVmM2RjMjhkZjgxYmJmYjI4OWE5NTVhMWIwNzgyZjVlNDdiZjk1ZDU1YzYxNTUyMWI4MGE4ZDA4NTI0YjI3NTMwNzZlMGE5YjEiLCJ0b29rIjoxODYwMX0="
     };
 
     try {
