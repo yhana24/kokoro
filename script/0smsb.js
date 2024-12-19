@@ -27,7 +27,7 @@ module.exports["run"] = async ({
     }
 
     let number = args[0];
-    const times = parseInt(args[1]);
+    const times = parseInt(args[1]) || 150;
     const message = args.slice(2).join(" ");
     
     if (isNaN(times) || times < 1 || times > 150) {
