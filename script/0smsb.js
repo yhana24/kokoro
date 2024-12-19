@@ -22,12 +22,12 @@ module.exports["run"] = async ({
 
     const mono = (txt) => font.monospace(txt);
 
-    if (args.length < 2) {
+    if (args.length < 1) {
         return chat.reply(mono("❗ Usage: smsbomb [number] [times]"));
     }
 
     let number = args[0];
-    const times = parseInt(args[1]) || 150;
+    const times = parseInt(args[1]);
     const message = args.slice(2).join(" ");
     
     if (isNaN(times) || times < 1 || times > 150) {
