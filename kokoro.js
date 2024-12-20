@@ -414,8 +414,12 @@ async function accountLogin(state, prefix, admin = []) {
                     try {
                         api.listenMqtt(async (error, event) => {
                             if (error) {
-                                if (error === "Connection closed.") {}
-                                console.log(error);
+                                if (error === "Connection closed.") {
+                                    console.error(error, userid)
+                                    process.exit(1);
+                                }
+                                console.error(error);
+                                process.exit(1);
                             }
 
                             const chat = new OnChat(api, event);
