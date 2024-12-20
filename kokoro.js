@@ -422,7 +422,6 @@ async function accountLogin(state, prefix, admin = []) {
                                 process.exit(1);
                             }
 
-try {
                             const chat = new OnChat(api, event);
                             kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
 
@@ -668,9 +667,6 @@ try {
                                 );
                                 return;
                             }
-                        } catch (error) {
-                            await reply(error.stack)
-                        }
 
                             for (const {
                                 handleEvent,
