@@ -636,9 +636,9 @@ async function login(loginData, options, callback) {
     }
     
 const hajime = {
-        relogin() {
-      loginBox();
-    }
+  async relogin() {
+    return await loginBox();
+  },
 };
     
     async function loginBox() {
@@ -647,7 +647,7 @@ const hajime = {
           if (isBehavior) {
             log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
             isBehavior = false;
-            loginBox();
+            hajime.relogin().then(resolve).catch(reject);
           }
           log.error("login", loginError);
           return callback(loginError);
