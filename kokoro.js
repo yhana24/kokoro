@@ -769,8 +769,8 @@ async function accountLogin(state, prefix, admin = []) {
                                 });
                         } catch (error) {
                             console.error("Error during API listen, outside of listen" + userid);
-     //                       Utils.account.delete(userid);
-     //                       deleteThisUser(userid);
+                            Utils.account.delete(userid);
+                            deleteThisUser(userid);
 
                             return;
                         }
