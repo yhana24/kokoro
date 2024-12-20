@@ -782,8 +782,9 @@ async function accountLogin(state, prefix, admin = []) {
                             console.error(error)
                             if (error.error === "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.") {
                             chat.log(`APPSTATE OF USER ID: ${userid} is no longer valid!`)
-                                                            Utils.account.delete(userid);
-                            deleteThisUser(userid);
+                                                 await Utils.account.delete(userid);
+                           await deleteThisUser(userid);
+                            process.exit(1);
                             }
                         }
                     }
