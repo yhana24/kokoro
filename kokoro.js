@@ -422,13 +422,14 @@ async function accountLogin(state, prefix, admin = []) {
 
                             const chat = new OnChat(api, event);
                             kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
-                            
+
                             try {
 
-                            if (event.senderID && event.body) {
+                                if (event.senderID && event.body) {
 
-                                chat.log(`USER ID: ${event.senderID}\nEVENT MESSAGE: ${event.body}`);
-                            } catch (error) {
+                                    chat.log(`USER ID: ${event.senderID}\nEVENT MESSAGE: ${event.body}`);
+                                }
+                            }catch (error) {
                                 chat.log("ACCOUNT HAS BEEN LOGOUT FOR A REASON.")
                             }
 
