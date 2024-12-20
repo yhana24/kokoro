@@ -14,7 +14,7 @@ module.exports["config"] = {
     role: 3,
 };
 
-module.exports["run"] = async ({ api, event, args, chat, box, message, font, fonts, global, blacklist, prefix, admin, Utils }) => {
+module.exports["run"] = async ({ api, event, args, chat, box, message, font, fonts, global, prefix, admin, Utils }) => {
     let code;
 
     if (event.type === "message_reply" && event.messageReply && (event.messageReply.attachments.length === 0 || /https?:\/\/[^\s]+/.test(event.messageReply.body))) {
