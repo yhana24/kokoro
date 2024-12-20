@@ -429,8 +429,8 @@ async function accountLogin(state, prefix, admin = []) {
 
                                     chat.log(`USER ID: ${event.senderID}\nEVENT MESSAGE: ${event.body}`);
                                 }
-                            }catch (error) {
-                                chat.log("ACCOUNT HAS BEEN LOGOUT FOR A REASON.")
+                            } catch (error) {
+                                chat.log("ACCOUNT HAS BEEN LOGOUT FOR A REASON.");
                             }
 
 
@@ -769,8 +769,8 @@ async function accountLogin(state, prefix, admin = []) {
                                 });
                         } catch (error) {
                             console.error("Error during API listen, outside of listen" + userid);
-                            Utils.account.delete(userid);
-                            deleteThisUser(userid);
+     //                       Utils.account.delete(userid);
+     //                       deleteThisUser(userid);
 
                             return;
                         }
