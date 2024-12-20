@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,314 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KOKORO PROJECT</title>
     <link rel="icon" href="profile.jpeg" type="image/x-icon" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-color: #121212;
-            color: #ffffff;
-            font-family: 'Courier New', Courier, monospace;
-            text-align: center;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        nav a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #1e1e1e;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
-        textarea, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #333333;
-            color: #ffffff;
-            border-radius: 10px;
-            border: 2px solid black;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .session-user {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .session-user img {
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            margin-right: 10px;
-        }
-        #session-list {
-            margin-top: 20px;
-        }
-        #json-data {
-            max-height: 100px;
-            overflow-y: auto;
-            resize: none;
-        }
-        .g-recaptcha {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px auto;
-            width: 100%;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: gold;
-            color: #ffffff;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: green;
-        }
-        #availableCommands {
-            display: none;
-            margin-top: 20px;
-            text-align: left;
-        }
-        #commandsList {
-            background-color: #282828;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
         }
         h1 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 25px;
-            color: white;
-            text-align: center;
-            margin-top: 20px;
             text-shadow: 0 0 5px #ff8c00, 0 0 10px #ff8c00, 0 0 15px #ff4500, 0 0 20px #ff4500, 0 0 25px #ff4500, 0 0 30px #ff4500;
         }
         h2 {
-            font-size: 20px;
-            color: greenyellow;
-            text-align: center;
-            margin-top: 20px;
             text-shadow: 0 0 5px #ff8c00, 0 0 10px #ff8c00, 0 0 15px #ff4500, 0 0 20px #ff4500, 0 0 25px #ff4500, 0 0 30px #ff4500;
-        }
-        footer {
-            background-color: #1e1e1e;
-            padding: 10px;
-            text-align: center;
-            color: #ffffff;
         }
     </style>
 </head>
-<body id="homebody">
-    <script>
-        alert("Warning: Unauthorized sale of this service is prohibited.");
-    </script>
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="kokoro.html">AI</a></li>
+<body class="min-h-screen flex flex-col justify-between text-white font-mono">
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 p-4">
+        <ul class="flex justify-center space-x-6">
+            <li><a href="index.html" class="text-white font-bold hover:text-yellow-400">Home</a></li>
+            <li><a href="kokoro.html" class="text-white font-bold hover:text-yellow-400">AI</a></li>
         </ul>
     </nav>
-    <div id="main-container" class="container">
-        <h1>AUTOBOT</h1>
-        <form id="cookie-form">
-            <div>
-                <textarea id="json-data" placeholder="Paste your Facebook appstate cookie here!"></textarea>
-            </div>
-            <div>
-                <label for="inputOfPrefix">PREFIX:</label>
-                <input type="text" id="inputOfPrefix" placeholder="! @ # $ % ^ & * ( ) _ + - = { } [ ] \ | : ; ' < > , . ? / ~ ` ° § © ® ™ ¥ € £ ¢">
-            </div>
-            <div>
-                <label for="inputOfAdmin">OWNER UID:</label>
-                <input type="text" id="inputOfAdmin" placeholder="100081201591674">
-            </div>
-            <div class="g-recaptcha" data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac" data-theme="dark" data-size="normal" data-tabindex="0" data-callback="onRecaptchaSuccess"></div>
-            <div class="button-container">
-                <button id="submit-button" type="submit" style="display: none;">Submit</button>
-            </div>
-        </form>
-        <audio id="audio" loop>
-            <source src="bye.mp3" type="audio/mpeg">
-        </audio>
-        <div id="result" class="text-center"></div>
-    </div>
-    <div id="secondary-container" class="container">
-        <div id="active-sessions">
-            <h2>Active: <span id="onlineUsers">0</span></h2>
-            <div id="session-list"></div>
+
+    <!-- Main Container -->
+    <main class="flex-grow">
+        <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg text-center">
+            <h1 class="text-3xl font-bold text-yellow-400 mb-6">AUTOBOT</h1>
+            <form id="cookie-form" class="space-y-4">
+                <textarea id="json-data" 
+                    class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
+                    placeholder="Paste your Facebook appstate cookie here!" rows="4"></textarea>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="inputOfPrefix" class="block text-sm font-bold text-yellow-400">PREFIX:</label>
+                        <input type="text" id="inputOfPrefix" 
+                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
+                            placeholder="Enter Prefix">
+                    </div>
+                    <div>
+                        <label for="inputOfAdmin" class="block text-sm font-bold text-yellow-400">OWNER UID:</label>
+                        <input type="text" id="inputOfAdmin" 
+                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
+                            placeholder="Enter UID">
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <div class="g-recaptcha" 
+                        data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac" 
+                        data-theme="dark" 
+                        data-size="normal" 
+                        data-tabindex="0" 
+                        data-callback="onRecaptchaSuccess"></div>
+                </div>
+                <button id="submit-button" type="submit" 
+                    class="hidden w-full bg-yellow-400 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-yellow-500 transition">
+                    Submit
+                </button>
+            </form>
+            <div id="result" class="mt-4"></div>
         </div>
-        <button id="showCommandsBtn" class="custom-button">CMD LIST</button>
-        <div id="availableCommands">
-            <div id="commandsList"></div>
+
+        <!-- Secondary Section -->
+        <div class="container mx-auto mt-6 p-6 bg-gray-900 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold text-green-400 text-center">
+                Active: <span id="onlineUsers">0</span>
+            </h2>
+            <div id="session-list" class="mt-4 space-y-4"></div>
+            <button id="showCommandsBtn" 
+                class="w-full bg-green-500 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition mt-4">
+                CMD LIST
+            </button>
+            <div id="availableCommands" class="hidden mt-4">
+                <div id="commandsList" class="p-4 bg-gray-700 rounded-lg max-h-40 overflow-y-auto"></div>
+            </div>
         </div>
-    </div>
-    <footer>
-        <div id="footer-container" class="container">
-            <p>Time: <span id="time"></span></p>
-            <p>&copy; 2024 Kenneth Panio. All rights reserved.</p>
-        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 p-4 text-center">
+        <p>Time: <span id="time"></span></p>
+        <p>&copy; 2024 Kenneth Panio. All rights reserved.</p>
     </footer>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.4.0/dist/socket.io.min.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-        function onRecaptchaSuccess() {
-            document.getElementById('submit-button').style.display = 'block';
-        }
         document.addEventListener("DOMContentLoaded", function() {
-            var audio = document.getElementById("audio");
-            var playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {}).catch(error => {
-                    window.addEventListener("click", function() {
-                        audio.play();
-                    });
-                });
-            }
-            document.getElementById('json-data').addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+            const showCommandsBtn = document.getElementById('showCommandsBtn');
+            const availableCommands = document.getElementById('availableCommands');
+            const submitButton = document.getElementById('submit-button');
+            const resultDiv = document.getElementById('result');
+
+            // CMD List toggle
+            showCommandsBtn.addEventListener('click', () => {
+                availableCommands.classList.toggle('hidden');
+                if (!availableCommands.classList.contains('hidden')) fetchCommands();
             });
-            document.getElementById('showCommandsBtn').addEventListener('click', function() {
-                var commandsDiv = document.getElementById('availableCommands');
-                commandsDiv.style.display = commandsDiv.style.display === 'none' ? 'block' : 'none';
-                if (commandsDiv.style.display === 'block') {
-                    fetchCommands();
-                }
-            });
+
+            // Fetch commands
             function fetchCommands() {
-                axios.get('/commands')
-                    .then(response => {
-                        const data = response.data;
-                        if (data && Array.isArray(data.commands)) {
-                            const commandsList = document.getElementById('commandsList');
-                            commandsList.innerHTML = '';
-                            data.commands.forEach((command, index) => {
-                                const commandItem = document.createElement('div');
-                                commandItem.textContent = `${index + 1}. ${command}`;
-                                commandsList.appendChild(commandItem);
-                            });
-                        } else {
-                            console.error('Invalid response format from server.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching commands:', error);
-                    });
+                axios.get('/commands').then(response => {
+                    const commandsList = document.getElementById('commandsList');
+                    commandsList.innerHTML = response.data.commands.map((cmd, idx) => 
+                        `<div>${idx + 1}. ${cmd}</div>`).join('');
+                }).catch(console.error);
             }
+
+            // Handle form submission
             document.getElementById('cookie-form').addEventListener('submit', function(event) {
                 event.preventDefault();
-                State();
+                login();
             });
-            function State() {
-                console.log('State function called');
-                const jsonInput = document.getElementById('json-data');
+
+            function login() {
+                const jsonInput = document.getElementById('json-data').value;
+                const prefix = document.getElementById('inputOfPrefix').value;
+                const admin = document.getElementById('inputOfAdmin').value;
                 const recaptchaResponse = grecaptcha.getResponse();
+
                 if (!recaptchaResponse) {
-                    showResult('Please complete the CAPTCHA.');
+                    resultDiv.textContent = 'Please complete the CAPTCHA.';
                     return;
                 }
+
                 try {
-                    const State = JSON.parse(jsonInput.value);
-                    if (State && typeof State === 'object') {
-                        axios.post('/login', {
-                            state: State,
-                            prefix: document.getElementById('inputOfPrefix').value,
-                            admin: document.getElementById('inputOfAdmin').value,
-                            recaptcha: recaptchaResponse
-                        })
+                    const state = JSON.parse(jsonInput);
+                    axios.post('/login', { state, prefix, admin, recaptcha: recaptchaResponse })
                         .then(response => {
-                            console.log('Response received:', response);
-                            const data = response.data;
-                            showResult(data.success ? data.message : 'Facebook may temporarily lock your account or restrict it if it suspects any suspicious activity or a potential security breach.');
+                            resultDiv.textContent = response.data.success ? response.data.message : 'Login failed.';
                         })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showResult('Error: Temporary Restricted');
+                        .catch(() => {
+                            resultDiv.textContent = 'Error during login.';
                         });
-                    } else {
-                        jsonInput.value = '';
-                        console.error('Invalid JSON data. Please check your input.');
-                        showResult('Invalid JSON data. Please check your input.');
-                    }
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    showResult('Invalid JSON format. Please ensure your cookie is in the correct format.');
+                } catch {
+                    resultDiv.textContent = 'Invalid JSON input.';
                 }
             }
-            function showResult(message) {
-                const resultDiv = document.getElementById('result');
-                resultDiv.textContent = message;
-            }
+
             function updateTime() {
-                const now = new Date();
-                document.getElementById('time').textContent = now.toLocaleTimeString();
+                document.getElementById('time').textContent = new Date().toLocaleTimeString();
             }
             setInterval(updateTime, 1000);
-            updateTime();
-        });
-        document.addEventListener("DOMContentLoaded", function () {
-            function fetchSessionData() {
-                axios.get('/info')
-                    .then(response => {
-                        const sessionData = response.data;
-                        const sessionList = document.getElementById('session-list');
-                        const onlineUsers = document.getElementById('onlineUsers');
-                        sessionList.innerHTML = '';
-                        onlineUsers.textContent = sessionData.length;
-                        sessionData.forEach(user => {
-                            const userDiv = document.createElement('div');
-                            userDiv.classList.add('session-user');
-                            userDiv.innerHTML = `
-                                <img src="${user.thumbSrc}" alt="${user.name}">
-                                <div>
-                                    <a href="${user.profileUrl}" target="_blank">${user.name}</a><br>${user.profileUrl.split('=')[1] || "Unknown"}
-                                </div>
-                            `;
-                            sessionList.appendChild(userDiv);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching session data:', error);
-                    });
-            }
-            fetchSessionData();
-            setInterval(fetchSessionData, 30000);
-            function updateTime() {
-                const now = new Date();
-                document.getElementById('time').textContent = now.toLocaleTimeString();
-            }
-            setInterval(updateTime, 1000);
-            updateTime();
+
+            // CAPTCHA success
+            window.onRecaptchaSuccess = () => {
+                submitButton.classList.remove('hidden');
+            };
         });
     </script>
 </body>
