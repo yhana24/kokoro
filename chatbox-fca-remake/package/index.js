@@ -666,7 +666,8 @@ async function loginBox() {
     });
 }
   const login_result = await loginBox();
-    return login_result;
+   // return login_result;
+    return returnPromise;
 }
 
 module.exports = login;
