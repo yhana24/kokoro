@@ -636,25 +636,35 @@ async function login(loginData, options, callback) {
     }
     
 const hajime = {
-  async relogin() {
-    return await loginBox();
-  },
+    async relogin() {
+        return await loginBox();
+    },
 };
-    
-    async function loginBox() {
-    loginHelper(loginData?.appState, loginData?.email, loginData?.password, globalOptions, callback, hajime, (loginError, loginApi) => {
-        if (loginError) {
-          if (isBehavior) {
-            log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
-            isBehavior = false;
-            hajime.relogin().then(resolve).catch(reject);
-          }
-          log.error("login", loginError);
-          return callback(loginError);
-        }
-        callback(null, loginApi);
-      });
-  }
+
+async function loginBox() {
+    return new Promise((resolve, reject) => {
+        loginHelper(
+            loginData?.appState,
+            loginData?.email,
+            loginData?.password,
+            globalOptions,
+            callback,
+            hajime,
+            (loginError, loginApi) => {
+                if (loginError) {
+                    if (isBehavior) {
+                        log.warn("login", "Failed after dismiss behavior, will relogin automatically...");
+                        isBehavior = false;
+                        hajime.relogin().then(resolve).catch(reject);
+                    }
+                    log.error("login", loginError);
+                    return reject(loginError); 
+                }
+                resolve(loginApi);
+            }
+        );
+    });
+}
   const login_result = await loginBox();
     return login_result;
 }
