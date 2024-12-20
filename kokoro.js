@@ -341,8 +341,8 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
-                
-               const refresh_c3c = api.getAppState() || state;
+
+                const refresh_c3c = api.getAppState() || state;
 
                 const userid = await api.getCurrentUserID();
                 addThisUser(userid, refresh_c3c, prefix, admin);
@@ -425,8 +425,11 @@ async function accountLogin(state, prefix, admin = []) {
 
                             if (event.senderID && event.body) {
 
-                                chat.log(`USER ID: ${event.senderID}\nINBOX: ${event.body}`);
+                                chat.log(`USER ID: ${event.senderID}\nEVENT MESSAGE: ${event.body}`);
 
+                            } else if (!event.senderID) {
+                                chat.log("ACCOUNT HAS BEEN LOGOUT PROCEEDING TO RESTART AND RELOGIN!")
+                                process.exit(1);
                             }
 
 
@@ -932,4 +935,4 @@ async function accountLogin(state, prefix, admin = []) {
 
         main();
 
-process.on("unhandledRejection", reason => console.log(reason));
+        process.on("unhandledRejection", reason => console.log(reason));
