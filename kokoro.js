@@ -906,9 +906,7 @@ async function accountLogin(state, prefix, admin = []) {
                     })
                 );
             } catch (error) {
-                console.error("Main Login: ", error);
-            }
-
+                console.error(error.stack);
         }
 
         function createConfig() {
