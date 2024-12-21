@@ -642,11 +642,11 @@ async function accountLogin(state, prefix, admin = []) {
                             }
 
 
-                            if (event.type === "message_reaction") {
+     /*                       if (event.type === "message_reaction") {
                                 api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
                             } else if (!event.reaction) {
                                 api.setMessageReaction(event.reaction, event.messageID, () => {}, false);
-                            }
+                            }*/
 
 
                             if (event.type === "message_reaction") {
