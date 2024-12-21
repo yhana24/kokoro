@@ -126,14 +126,14 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
   const model = models[2];
 
   if (!query) {
-    chat.reply(font.monospace("Please provide a question!"));
+    chat.reply(font.thin("Please provide a question!"));
     return;
   }
 
   conversationHistories[senderID] = conversationHistories[senderID] || [];
   conversationHistories[senderID].push({ role: "user", content: query });
 
-  const answering = await chat.reply(font.monospace("🕐 | GPT-4o is Typing..."));
+//  const answering = await chat.reply(font.monospace("🕐 | GPT-4o is Typing..."));
   const chatInstance = new Chat(model, statusUrl, chatUrl);
 
   try {
@@ -141,10 +141,12 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
     const cleanup = response.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
     conversationHistories[senderID].push({ role: "assistant", content: response });
 
-    const message = font.bold(" 🤖 | " + model.split('/').pop().toUpperCase()) + "\n" + '━'.repeat(18) + "\n" + cleanup + "\n" + '━'.repeat(18) 
-    answering.edit(message);
+    const message = font.bold(" 🤖 | " + model.split('/').pop().toUpperCase()) + "\n" + '━'.repeat(18) + "\n" + cleanup + "\n" + '━'.repeat(18)
+    chat.reply(message);
+ //   answering.edit(message);
   } catch (error) {
-    answering.edit(font.monospace("Failed to retrieve response from GPT-4o: " + error.message));
+  //  answering.edit(font.monospace("Failed to retrieve response from GPT-4o: " + error.message));
+  chat.reply(font.thin(error.message));
   }
 };
 
