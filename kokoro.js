@@ -908,7 +908,7 @@ async function accountLogin(state, prefix, admin = []) {
             } catch (error) {
                 console.error(error.stack);
         }
-
+}
         function createConfig() {
             const config = [{
                 masterKey: {
