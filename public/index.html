@@ -41,10 +41,27 @@
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
                         <label for="inputOfPrefix" class="block text-sm font-bold text-yellow-400">PREFIX:</label>
-                        <input type="text" id="inputOfPrefix"
-                        class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
-                        placeholder="Enter Prefix">
+                        <select id="inputOfPrefix"
+                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400">
+                            <option value="!">!</option>
+                            <option value="$">$</option>
+                            <option value="*">*</option>
+                            <option value="~">~</option>
+                            <option value="#">#</option>
+                            <option value="+">+</option>
+
+                            <option value="/">/</option>
+                            <option value="?">?</option>
+                            <option value=".">.</option>
+                            <option value="•">•</option>
+                            <option value="\">\</option>
+                            <option value="^">^</option>
+                            <option value="÷">÷</option>
+                            <option value="×">×</option>
+                            <option value="-">-</option>
+                        </select>
                     </div>
+
                     <div>
                         <label for="inputOfAdmin" class="block text-sm font-bold text-yellow-400">OWNER UID:</label>
                         <input type="text" id="inputOfAdmin"
