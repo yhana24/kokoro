@@ -272,7 +272,6 @@ async function postLogin(req, res) {
             throw new Error('Invalid app state data');
         }
 
-        // fix duplicate login issues
         const user = state.find(item => item.key === 'i_user' || item.key === 'c_user');
         if (!user) {
             throw new Error('User key not found in state');
@@ -280,14 +279,27 @@ async function postLogin(req, res) {
 
         const existingUser = Utils.account.get(user.value);
 
-/*        if (existingUser) {
-            chat.log(`User ${user.value} is already logged in`);
-            return res.status(400).json({
-                error: false,
-                message: 'Active user session detected; already logged in',
-                user: existingUser,
-            });
-        }*/
+        if (existingUser) {
+            const lastLoginTime = existingUser.lastLoginTime || 0;
+            const currentTime = Date.now();
+            const timeDifference = currentTime - lastLoginTime;
+            const waitTime = 3 * 60 * 1000;
+
+            if (timeDifference < waitTime) {
+                chat.log(`User ${user.value} is already logged in`);
+                const waitMinutes = Math.floor((waitTime - timeDifference) / 60000);
+                return res.status(400).json({
+                    error: false,
+                    message: `This account is already logged in. Please wait ${waitMinutes} more minute(s) to relogin again to avoid duplicate bots. if bots does not respond please wait more few minutes and relogin again.`,
+                    user: existingUser,
+                });
+            }
+        }
+
+        if (existingUser) {
+            existingUser.lastLoginTime = Date.now();
+            Utils.account.update(existingUser);
+        }
 
         await accountLogin(state, prefix, [admin]);
         res.status(200).json({
@@ -301,6 +313,7 @@ async function postLogin(req, res) {
             message: error.message,
         });
     }
+
 }
 
 
@@ -343,7 +356,7 @@ async function accountLogin(state, prefix, admin = []) {
                 }
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, state, prefix, admin);
+                addThisUser(userid, api.getAppState() || state, prefix, admin);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
@@ -907,8 +920,8 @@ async function accountLogin(state, prefix, admin = []) {
                 );
             } catch (error) {
                 console.error(error);
+            }
         }
-}
         function createConfig() {
             const config = [{
                 masterKey: {
