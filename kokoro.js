@@ -354,8 +354,25 @@ async function accountLogin(state, prefix, admin = []) {
                     return;
                 }
 
+
+                const facebookLinkRegex = /(?:https?:\/\/)?(?:www\.)?facebook\.com\/(?:profile\.php\?id=)?(\d+)|@(\d+)|facebook\.com\/([a-zA-Z0-9.]+)/i;
+                let adminUIDs = [];
+
+                for (const adminEntry of admin) {
+                    if (facebookLinkRegex.test(adminEntry)) {
+                        try {
+                            const admin_uid = await api.getUID(adminEntry);
+                            adminUIDs.push(admin_uid);
+                        } catch (uidError) {
+                            chat.log("ADMIN ID IS INVALID!");
+                        }
+                    }
+                }
+                
+                const validate_uid = adminUIDs.length > 0 ? adminUIDs : admin;
+
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, api.getAppState() || state, prefix, admin);
+                addThisUser(userid, api.getAppState() || state, prefix, validate_uid);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
@@ -642,7 +659,7 @@ async function accountLogin(state, prefix, admin = []) {
                             }
 
 
-     /*                       if (event.type === "message_reaction") {
+                            /*                       if (event.type === "message_reaction") {
                                 api.setMessageReaction(event.reaction, event.messageID, () => {}, true);
                             } else if (!event.reaction) {
                                 api.setMessageReaction(event.reaction, event.messageID, () => {}, false);
