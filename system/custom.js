@@ -2,7 +2,6 @@ const cron = require('node-cron');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const log = require("npmlog");
 
 module.exports = ({ api, font }) => {
     // Helper to format text in monospace if font is available
@@ -59,14 +58,12 @@ module.exports = ({ api, font }) => {
 
     // Task: Restart the system
     async function restart() {
-        log.info("CRON", "Restarting...");
-        process.exit(0);
+        process.exit(1);
     }
 
     // Task: Clear chat
     async function clearChat() {
         try {
-            log.info("CRON", "Clearing chat...");
             const threads = await api.getThreadList(25, null, ['INBOX']);
             if (!threads || !Array.isArray(threads)) {
                 throw new Error("Invalid thread list.");
@@ -84,7 +81,6 @@ module.exports = ({ api, font }) => {
     // Task: Accept pending messages
     async function acceptPending() {
         try {
-            log.info("CRON", "Accepting pending messages...");
             const pendingThreads = await api.getThreadList(25, null, ['PENDING']);
             if (!pendingThreads || !Array.isArray(pendingThreads)) {
                 throw new Error("Invalid pending thread list.");
@@ -100,7 +96,6 @@ module.exports = ({ api, font }) => {
     // Task: Post motivational quotes
     async function motivation() {
         try {
-            log.info("CRON", "Posting motivational quotes...");
             const response = await axios.get("https://raw.githubusercontent.com/JamesFT/Database-Quotes-JSON/master/quotes.json");
             const quotes = response.data;
             if (!Array.isArray(quotes) || quotes.length === 0) {
