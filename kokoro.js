@@ -280,14 +280,14 @@ async function postLogin(req, res) {
 
         const existingUser = Utils.account.get(user.value);
 
-        if (existingUser) {
+/*        if (existingUser) {
             chat.log(`User ${user.value} is already logged in`);
             return res.status(400).json({
                 error: false,
                 message: 'Active user session detected; already logged in',
                 user: existingUser,
             });
-        }
+        }*/
 
         await accountLogin(state, prefix, [admin]);
         res.status(200).json({

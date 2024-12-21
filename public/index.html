@@ -30,37 +30,37 @@
 <body class="min-h-screen flex flex-col justify-between text-white font-mono">
 
     <!-- Main Container -->
- <main class="flex-grow">
+    <main class="flex-grow">
         <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg text-center">
-    <!--           <h1 class="text-2xl font-bold text-yellow-400 mb-6"> I don't know</h1>-->
+            <!--           <h1 class="text-2xl font-bold text-yellow-400 mb-6"> I don't know</h1>-->
             <br>
             <form id="cookie-form" class="space-y-4">
-                <textarea id="json-data" 
-                    class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
+                <textarea id="json-data"
+                    class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
                     placeholder="Paste your Facebook appstate cookie here!" rows="4"></textarea>
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
                         <label for="inputOfPrefix" class="block text-sm font-bold text-yellow-400">PREFIX:</label>
-                        <input type="text" id="inputOfPrefix" 
-                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
-                            placeholder="Enter Prefix">
+                        <input type="text" id="inputOfPrefix"
+                        class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
+                        placeholder="Enter Prefix">
                     </div>
                     <div>
                         <label for="inputOfAdmin" class="block text-sm font-bold text-yellow-400">OWNER UID:</label>
-                        <input type="text" id="inputOfAdmin" 
-                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400" 
-                            placeholder="Enter UID">
+                        <input type="text" id="inputOfAdmin"
+                        class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
+                        placeholder="Enter UID">
                     </div>
                 </div>
                 <div class="flex justify-center">
-                    <div class="g-recaptcha" 
-                        data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac" 
-                        data-theme="dark" 
-                        data-size="normal" 
-                        data-tabindex="0" 
+                    <div class="g-recaptcha"
+                        data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac"
+                        data-theme="dark"
+                        data-size="normal"
+                        data-tabindex="0"
                         data-callback="onRecaptchaSuccess"></div>
                 </div>
-                <button id="submit-button" type="submit" 
+                <button id="submit-button" type="submit"
                     class="hidden w-full bg-yellow-400 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-yellow-500 transition">
                     Submit
                 </button>
@@ -74,7 +74,7 @@
                 Active: <span id="onlineUsers">0</span>
             </h2>
             <div id="session-list" class="mt-4 space-y-4"></div>
-            <button id="showCommandsBtn" 
+            <button id="showCommandsBtn"
                 class="w-full bg-green-500 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition mt-4">
                 CMD LIST
             </button>
@@ -86,8 +86,12 @@
 
     <!-- Footer -->
     <footer class="bg-gray-800 p-4 text-center text-sm">
-        <p>Time: <span id="time"></span></p>
-        <p>&copy; 2024 Kenneth Panio. All rights reserved.</p>
+        <p>
+            Time: <span id="time"></span>
+        </p>
+        <p>
+            &copy; 2024 Kenneth Panio. All rights reserved.
+        </p>
     </footer>
 
     <!-- Scripts -->
@@ -100,7 +104,7 @@
             const availableCommands = document.getElementById('availableCommands');
             const submitButton = document.getElementById('submit-button');
             const resultDiv = document.getElementById('result');
-            const onlineUsers = document.getElementById('onlineUsers');  // reference to active users element
+            const onlineUsers = document.getElementById('onlineUsers'); // reference to active users element
 
             // CMD List toggle
             showCommandsBtn.addEventListener('click', () => {
@@ -112,7 +116,7 @@
             function fetchCommands() {
                 axios.get('/commands').then(response => {
                     const commandsList = document.getElementById('commandsList');
-                    commandsList.innerHTML = response.data.commands.map((cmd, idx) => 
+                    commandsList.innerHTML = response.data.commands.map((cmd, idx) =>
                         `<div>${idx + 1}. ${cmd}</div>`).join('');
                 }).catch(console.error);
             }
@@ -127,10 +131,11 @@
             }
 
             // Handle form submission
-            document.getElementById('cookie-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                login();
-            });
+            document.getElementById('cookie-form').addEventListener('submit',
+                function(event) {
+                    event.preventDefault();
+                    login();
+                });
 
             function login() {
                 const jsonInput = document.getElementById('json-data').value;
@@ -145,14 +150,20 @@
 
                 try {
                     const state = JSON.parse(jsonInput);
-                    axios.post('/login', { state, prefix, admin, recaptcha: recaptchaResponse })
-                        .then(response => {
-                            resultDiv.textContent = response.data.success ? response.data.message : 'Login failed.';
-                        })
-                        .catch(() => {
-                            resultDiv.textContent = 'Error during login.';
-                        });
-                } catch {
+                    axios.post('/login', {
+                        state, prefix, admin, recaptcha: recaptchaResponse
+                    })
+                    .then(response => {
+                        resultDiv.textContent = response.data.success ? response.data.message: 'Login failed.';
+                    })
+                    .catch(error => {
+                        if (error.response) {
+                            resultDiv.textContent = `${error.response.data.message || 'Unknown error'}`;
+                        } else {
+                            resultDiv.textContent = 'Network or connection issue occurred.';
+                        }
+                    });
+                } catch (error) {
                     resultDiv.textContent = 'Invalid JSON input.';
                 }
             }
@@ -160,7 +171,8 @@
             function updateTime() {
                 document.getElementById('time').textContent = new Date().toLocaleTimeString();
             }
-            setInterval(updateTime, 1000);
+            setInterval(updateTime,
+                1000);
 
             // CAPTCHA success
             window.onRecaptchaSuccess = () => {
