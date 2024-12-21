@@ -928,7 +928,7 @@ async function accountLogin(state, prefix, admin = []) {
                     database: false
                 },
                 fcaOption: {
-                    forceLogin: true,
+                    forceLogin: false,
                     listenEvents: true,
                     logLevel: "silent",
                     updatePresence: true,
