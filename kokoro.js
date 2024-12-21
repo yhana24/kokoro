@@ -272,6 +272,7 @@ async function postLogin(req, res) {
             throw new Error('Invalid app state data');
         }
 
+        // Fix duplicate login issues
         const user = state.find(item => item.key === 'i_user' || item.key === 'c_user');
         if (!user) {
             throw new Error('User key not found in state');
@@ -280,28 +281,24 @@ async function postLogin(req, res) {
         const existingUser = Utils.account.get(user.value);
 
         if (existingUser) {
-            const lastLoginTime = existingUser.lastLoginTime || 0;
             const currentTime = Date.now();
-            const timeDifference = currentTime - lastLoginTime;
+            const lastLoginTime = existingUser.lastLoginTime || 0;
             const waitTime = 3 * 60 * 1000;
 
-            if (timeDifference < waitTime) {
-                chat.log(`User ${user.value} is already logged in`);
-                const waitMinutes = Math.floor((waitTime - timeDifference) / 60000);
+            if (currentTime - lastLoginTime < waitTime) {
+                const remainingTime = Math.ceil((waitTime - (currentTime - lastLoginTime)) / 1000);
                 return res.status(400).json({
                     error: false,
-                    message: `This account is already logged in. Please wait ${waitMinutes} more minute(s) to relogin again to avoid duplicate bots. if bots does not respond please wait more few minutes and relogin again.`,
+                    message: `This account is already logged in. Please wait ${remainingTime} seconds before trying to log in again to avoid duplicate bots.`,
                     user: existingUser,
                 });
             }
         }
 
-        if (existingUser) {
-            existingUser.lastLoginTime = Date.now();
-            Utils.account.update(existingUser);
-        }
-
         await accountLogin(state, prefix, [admin]);
+        Utils.account.set(user.value, {
+            lastLoginTime: Date.now()
+        });
         res.status(200).json({
             success: true,
             message: 'Authentication successful; user logged in.',
@@ -313,6 +310,8 @@ async function postLogin(req, res) {
             message: error.message,
         });
     }
+
+
 
 }
 
