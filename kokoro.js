@@ -289,7 +289,7 @@ async function postLogin(req, res) {
                 const remainingTime = Math.ceil((waitTime - (currentTime - lastLoginTime)) / 1000);
                 return res.status(400).json({
                     error: false,
-                    message: `This account is already logged in. Please wait ${remainingTime} seconds before trying to log in again to avoid duplicate bots.`,
+                    message: `This account is already logged in. Please wait ${remainingTime} more minute(s) to relogin again to avoid duplicate bots. if bots does not respond please wait more few minutes and relogin again.`,
                     user: existingUser,
                 });
             }
