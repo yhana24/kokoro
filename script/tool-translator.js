@@ -1,7 +1,19 @@
-const request = require("request");
+const axios = require("axios");
 const stringSimilarity = require("string-similarity");
 
-// List of supported languages and their codes
+module.exports["config"] = {
+    name: "translate",
+    aliases: ['translator', 'tr', 'trans'],
+    type: 'Tools',
+    version: "1.2.0",
+    role: 0,
+    isPrefix: false,
+    info: "Text translation",
+    usage: "(reply) trans [language] or [prompt]",
+    guide: "reply to message you want to translate\n\ntranslate [language] > message: hello > kamusta\ntrans [language] > message: kamusta > hello",
+    credits: "Developer",
+};
+
 const languages = {
     "af": "Afrikaans",
     "sq": "Albanian",
@@ -112,22 +124,6 @@ const languages = {
     "yi": "Yiddish",
     "yo": "Yoruba",
     "zu": "Zulu"
-};
-
-module.exports["config"] = {
-    name: "translate",
-    aliases: ['translator',
-        'tr',
-        'trans'],
-    type: 'Tools',
-    version: "1.2.0",
-    role: 0,
-    isPrefix: false,
-    info: "Text translation",
-    usage: "(reply) trans [language] or [prompt]",
-    guide: "reply to message you want to translate\n\ntranslate [language] > message: hello > kamusta\ntrans [language] > message: kamusta > hello",
-    credits: "Developer",
-};
 
 function getClosestLanguage(input) {
     const availableLanguages = Object.values(languages);
@@ -136,13 +132,11 @@ function getClosestLanguage(input) {
     return Object.keys(languages).find(key => languages[key] === bestMatch);
 }
 
-module.exports["run"] = async ({
-    chat, event, args, prefix, font
-}) => {
+module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
     if (args.length === 0 && event.type !== "message_reply") {
         const languageList = Object.entries(languages)
-        .map(([code, name]) => `${code}: ${name}`)
-        .join('\n');
+            .map(([code, name]) => `${code}: ${name}`)
+            .join('\n');
         return chat.reply(font.monospace(`Available languages:\n\n${languageList}\nExample: translate japanese i love you!`));
     }
 
@@ -152,9 +146,8 @@ module.exports["run"] = async ({
         const inputPhrase = args.join(" ").toLowerCase();
         const toLanguageMatch = inputPhrase.match(/to (\w+)/);
 
-        const inputLanguage = toLanguageMatch ? toLanguageMatch[1]: args[0].toLowerCase();
-
-        targetLanguage = languages[inputLanguage] ? inputLanguage: getClosestLanguage(inputLanguage);
+        const inputLanguage = toLanguageMatch ? toLanguageMatch[1] : args[0].toLowerCase();
+        targetLanguage = languages[inputLanguage] ? inputLanguage : getClosestLanguage(inputLanguage);
 
         if (!languages[inputLanguage] && !targetLanguage) {
             return chat.reply(font.monospace(`Could not find a matching language for "${args[0]}". Please provide a valid language code or name.`));
@@ -181,25 +174,18 @@ module.exports["run"] = async ({
     }
 
     try {
-        const apiUrl = encodeURI(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${translateThis}`);
-        request(apiUrl, (err, response, body) => {
-            if (err) {
-                return chat.reply(font.italic("An error has occurred while processing the request."));
-            }
+        const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(translateThis)}`;
+        const response = await axios.get(apiUrl);
 
-            try {
-                const retrieve = JSON.parse(body);
-                let translatedText = '';
-                retrieve[0].forEach(item => {
-                    if (item[0]) translatedText += item[0];
-                });
-                const fromLang = retrieve[2] || retrieve[8][0][0];
-                chat.reply(`Translation: \n\n${translatedText}\n\n- Translated from ${fromLang} to ${targetLanguage}`);
-            } catch (parseError) {
-                chat.reply(font.italic("An error has occurred while parsing the translation response."));
-            }
+        const retrieve = response.data;
+        let translatedText = '';
+        retrieve[0].forEach(item => {
+            if (item[0]) translatedText += item[0];
         });
+        const fromLang = retrieve[2] || retrieve[8][0][0];
+
+        chat.reply(`Translation: \n\n${translatedText}\n\n- Translated from ${fromLang} to ${languages[targetLanguage]}`);
     } catch (error) {
-        chat.reply(font.italic("An unexpected error has occurred."));
+        chat.reply(font.italic("An error occurred while processing the translation request. Please try again later."));
     }
 };
