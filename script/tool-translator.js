@@ -147,8 +147,8 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
     if (args.length > 0) {
         const inputPhrase = args.join(" ").toLowerCase();
 
-        // Check for "to [language]"
-        const toLanguageMatch = inputPhrase.match(/^to\s+(\w+)\s+(.*)/);
+        // Check for "to [language]" syntax
+        const toLanguageMatch = inputPhrase.match(/^to\s+(\w+)\s*(.*)/);
         if (toLanguageMatch) {
             const [, languageInput, text] = toLanguageMatch;
 
@@ -174,8 +174,8 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
         }
     }
 
-    // Fallback to message reply if text is still empty
-    if (!textToTranslate && event.type === "message_reply") {
+    // Handle reply case for event.messageReply
+    if (event.type === "message_reply" && !textToTranslate) {
         textToTranslate = event.messageReply.body;
     }
 
@@ -193,9 +193,9 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
         try {
             const translationData = JSON.parse(body);
             const translatedText = translationData[0].map(item => item[0]).join("");
-            const sourceLanguage = languages[translationData[2] || "auto"] || "en";
+            const sourceLanguage = languages[translationData[2] || "auto"] || "unknown";
 
-            chat.reply(font.thin(`Translation:\n\n${translatedText}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`));
+            chat.reply(font.bold(`Translation:\n\n${font.origin(translatedText)}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`));
         } catch (error) {
             chat.reply(font.thin("An error occurred while parsing the translation response."));
         }
