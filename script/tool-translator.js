@@ -1,19 +1,7 @@
-const axios = require("axios");
+const request = require("request");
 const stringSimilarity = require("string-similarity");
 
-module.exports["config"] = {
-    name: "translate",
-    aliases: ['translator', 'tr', 'trans'],
-    type: 'Tools',
-    version: "1.2.0",
-    role: 0,
-    isPrefix: false,
-    info: "Text translation",
-    usage: "(reply) trans [language] or [prompt]",
-    guide: "reply to message you want to translate\n\ntranslate [language] > message: hello > kamusta\ntrans [language] > message: kamusta > hello",
-    credits: "Developer",
-};
-
+// List of supported languages and their codes
 const languages = {
     "af": "Afrikaans",
     "sq": "Albanian",
@@ -51,7 +39,7 @@ const languages = {
     "ht": "Haitian Creole",
     "ha": "Hausa",
     "haw": "Hawaiian",
-    "iw": "Hebrew",
+    "he": "Hebrew",
     "hi": "Hindi",
     "hmn": "Hmong",
     "hu": "Hungarian",
@@ -126,68 +114,71 @@ const languages = {
     "zu": "Zulu"
 };
 
+module.exports["config"] = {
+    name: "translate",
+    aliases: ["translator", "tr", "trans"],
+    type: "Tools",
+    version: "1.2.1",
+    role: 0,
+    isPrefix: false,
+    info: "Text translation",
+    usage: "(reply) trans [language] or [prompt]",
+    guide: "reply to a message or type the text with the language code/name.\nExample: translate spanish hello!",
+    credits: "Developer"
+};
 
 function getClosestLanguage(input) {
-    const availableLanguages = Object.values(languages);
-    const matches = stringSimilarity.findBestMatch(input, availableLanguages);
+    const matches = stringSimilarity.findBestMatch(input.toLowerCase(), Object.values(languages).map(name => name.toLowerCase()));
     const bestMatch = matches.bestMatch.target;
-    return Object.keys(languages).find(key => languages[key] === bestMatch);
+    return Object.keys(languages).find(key => languages[key].toLowerCase() === bestMatch);
 }
 
 module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
-    if (args.length === 0 && event.type !== "message_reply") {
+    if (!args.length && event.type !== "message_reply") {
         const languageList = Object.entries(languages)
             .map(([code, name]) => `${code}: ${name}`)
-            .join('\n');
-        return chat.reply(font.monospace(`Available languages:\n\n${languageList}\nExample: translate japanese i love you!`));
+            .join("\n");
+        return chat.reply(font.monospace(`Available languages:\n\n${languageList}\nExample: translate spanish hello!`));
     }
 
-    let targetLanguage = 'tl';
+    let targetLanguage = "tl";
+    let textToTranslate;
 
     if (args.length > 0) {
-        const inputPhrase = args.join(" ").toLowerCase();
-        const toLanguageMatch = inputPhrase.match(/to (\w+)/);
+        const languageInput = args[0].toLowerCase();
+        const foundLanguageCode = languages[languageInput] ? languageInput : getClosestLanguage(languageInput);
 
-        const inputLanguage = toLanguageMatch ? toLanguageMatch[1] : args[0].toLowerCase();
-        targetLanguage = languages[inputLanguage] ? inputLanguage : getClosestLanguage(inputLanguage);
-
-        if (!languages[inputLanguage] && !targetLanguage) {
-            return chat.reply(font.monospace(`Could not find a matching language for "${args[0]}". Please provide a valid language code or name.`));
+        if (!foundLanguageCode) {
+            return chat.reply(font.monospace(`Invalid language: "${languageInput}". Please provide a valid language name or code.`));
         }
+
+        targetLanguage = foundLanguageCode;
+        textToTranslate = args.slice(1).join(" ");
     }
 
-    let content;
-    if (toLanguageMatch) {
-        const contentStartIndex = toLanguageMatch.index + toLanguageMatch[0].length;
-        content = inputPhrase.slice(contentStartIndex).trim();
-    } else {
-        content = args.slice(1).join(" ");
+    if (!textToTranslate && event.type === "message_reply") {
+        textToTranslate = event.messageReply.body;
     }
 
-    if (content.length === 0 && event.type !== "message_reply") {
-        return chat.reply(font.monospace(`Please provide text to translate or reply to a message.\n\nExample: ${prefix}trans ${targetLanguage} what is life`));
+    if (!textToTranslate) {
+        return chat.reply(font.monospace(`Please provide text to translate or reply to a message.\nExample: ${prefix}trans spanish Hello!`));
     }
 
-    let translateThis;
-    if (event.type === "message_reply") {
-        translateThis = font.origin(event.messageReply.body);
-    } else {
-        translateThis = font.origin(content);
-    }
+    const apiUrl = encodeURI(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${textToTranslate}`);
 
-    try {
-        const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(translateThis)}`;
-        const response = await axios.get(apiUrl);
+    request(apiUrl, (err, response, body) => {
+        if (err) {
+            return chat.reply(font.italic("An error occurred while processing the translation request."));
+        }
 
-        const retrieve = response.data;
-        let translatedText = '';
-        retrieve[0].forEach(item => {
-            if (item[0]) translatedText += item[0];
-        });
-        const fromLang = retrieve[2] || retrieve[8][0][0];
+        try {
+            const translationData = JSON.parse(body);
+            const translatedText = translationData[0].map(item => item[0]).join("");
+            const sourceLanguage = languages[translationData[2] || "auto"] || "tl";
 
-        chat.reply(`Translation: \n\n${translatedText}\n\n- Translated from ${fromLang} to ${languages[targetLanguage]}`);
-    } catch (error) {
-        chat.reply(font.italic("An error occurred while processing the translation request. Please try again later."));
-    }
+            chat.reply(`Translation:\n\n${translatedText}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`);
+        } catch (error) {
+            chat.reply(font.italic("An error occurred while parsing the translation response."));
+        }
+    });
 };
