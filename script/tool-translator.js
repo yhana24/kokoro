@@ -138,7 +138,7 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
         const languageList = Object.entries(languages)
             .map(([code, name]) => `${code}: ${name}`)
             .join("\n");
-        return chat.reply(font.monospace(`Available languages:\n\n${languageList}\nExample: translate to spanish hello!`));
+        return chat.reply(font.thin(`Available languages:\n\n${languageList}\nExample: translate to spanish hello!`));
     }
 
     let targetLanguage = "tl"; // Default language
@@ -155,7 +155,7 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
             // Find the closest matching language or language code
             const foundLanguageCode = languages[languageInput] ? languageInput : getClosestLanguage(languageInput);
             if (!foundLanguageCode) {
-                return chat.reply(font.monospace(`Invalid language: "${languageInput}". Please provide a valid language name or code.`));
+                return chat.reply(font.thin(`Invalid language: "${languageInput}". Please provide a valid language name or code.`));
             }
 
             targetLanguage = foundLanguageCode;
@@ -166,7 +166,7 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
             const foundLanguageCode = languages[languageInput] ? languageInput : getClosestLanguage(languageInput);
 
             if (!foundLanguageCode) {
-                return chat.reply(font.monospace(`Invalid language: "${languageInput}". Please provide a valid language name or code.`));
+                return chat.reply(font.thin(`Invalid language: "${languageInput}". Please provide a valid language name or code.`));
             }
 
             targetLanguage = foundLanguageCode;
@@ -180,14 +180,14 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
     }
 
     if (!textToTranslate) {
-        return chat.reply(font.monospace(`Please provide text to translate or reply to a message.\nExample: ${prefix}translate to spanish Hello!`));
+        return chat.reply(font.thin(`Please provide text to translate or reply to a message.\nExample: ${prefix}translate to spanish Hello!`));
     }
 
-    const apiUrl = encodeURI(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${textToTranslate}`);
+    const apiUrl = encodeURI(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${font.origin(textToTranslate)}`);
 
     request(apiUrl, (err, response, body) => {
         if (err) {
-            return chat.reply(font.italic("An error occurred while processing the translation request."));
+            return chat.reply(font.thin("An error occurred while processing the translation request."));
         }
 
         try {
@@ -195,9 +195,9 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
             const translatedText = translationData[0].map(item => item[0]).join("");
             const sourceLanguage = languages[translationData[2] || "auto"] || "en";
 
-            chat.reply(`Translation:\n\n${translatedText}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`);
+            chat.reply(font.thin(`Translation:\n\n${translatedText}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`));
         } catch (error) {
-            chat.reply(font.italic("An error occurred while parsing the translation response."));
+            chat.reply(font.thin("An error occurred while parsing the translation response."));
         }
     });
 };
