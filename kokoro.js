@@ -933,7 +933,7 @@ async function accountLogin(state, prefix, admin = []) {
                             const decState = decryptSession(state);
                             await accountLogin(decState, prefix, admin, blacklist);
                         } catch (error) {
-                            deleteThisUser(path.parse(file).name);
+                            deleteThisUser(userId);
                         }
                     })
                 );
