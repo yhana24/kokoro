@@ -3,46 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB AUTOBOT</title>
-    <link rel="icon" href="https://i.imgur.com/XMTPszQ.jpeg" type="image/x-icon" />
-
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Kokoro Automated Chatbot" />
-    <meta property="og:description" content="Kokoro Automated FB Chatbot. Create AI Chatbot for free no need coding skills!" />
-    <meta property="og:image" content="https://i.imgur.com/YfbRLPk.jpeg" />
-    <meta property="og:url" content="http://haji-mix.hidenhosting.net:25783/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Kokoro FB chatbot automation." />
-
+    <title>FB Autobot</title>
+    <link rel="icon" href="https://i.imgur.com/XMTPszQ.jpeg" type="image/x-icon">
+    <meta property="og:title" content="KOKORO FB CHATBOT AUTOMATION.">
+    <meta property="og:description" content="KOKORO FB CHATBOT AUTOMATION. Create AI Chatbot for free with no coding skills!">
+    <meta property="og:image" content="https://i.imgur.com/YfbRLPk.jpeg">
+    <meta property="og:url" content="http://haji-mix.hidenhosting.net:25783/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="KOKORO FB CHATBOT AUTOMATION.">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background-color: #121212;
         }
-        h1 {
-            text-shadow: 0 0 5px #ff8c00, 0 0 10px #ff8c00, 0 0 15px #ff4500, 0 0 20px #ff4500, 0 0 25px #ff4500, 0 0 30px #ff4500;
-        }
-        h2 {
-            text-shadow: 0 0 5px #ff8c00, 0 0 10px #ff8c00, 0 0 15px #ff4500, 0 0 20px #ff4500, 0 0 25px #ff4500, 0 0 30px #ff4500;
+        h1, h2 {
+            text-shadow: 0 0 5px #ff8c00, 0 0 10px #ff8c00, 0 0 15px #ff4500;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between text-white font-mono">
-
-    <!-- Main Container -->
     <main class="flex-grow">
         <div class="container mx-auto p-6 bg-gray-900 rounded-lg shadow-lg text-center">
-            <!--           <h1 class="text-2xl font-bold text-yellow-400 mb-6"> I don't know</h1>-->
-            <br>
             <form id="cookie-form" class="space-y-4">
-                <textarea id="json-data"
-                    class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
-                    placeholder="Paste your Facebook appstate cookie here!" rows="4"></textarea>
+                <textarea id="json-data" class="w-full p-3 rounded-lg bg-gray-700 text-white border focus:ring-2 focus:ring-yellow-400" placeholder="Paste your Facebook appstate cookie here!" rows="4"></textarea>
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
                         <label for="inputOfPrefix" class="block text-sm font-bold text-yellow-400">PREFIX:</label>
-                        <select id="inputOfPrefix"
-                            class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400">
+                        <select id="inputOfPrefix" class="w-full p-2 rounded-lg bg-gray-700 text-white border focus:ring-2 focus:ring-yellow-400">
                             <option value="">(Default) Not Specified</option>
                             <option value="!">!</option>
                             <option value="$">$</option>
@@ -50,156 +37,39 @@
                             <option value="~">~</option>
                             <option value="#">#</option>
                             <option value="+">+</option>
-
                             <option value="/">/</option>
                             <option value="?">?</option>
                             <option value=".">.</option>
                             <option value="•">•</option>
-                            <option value="\">\</option>
                             <option value="^">^</option>
-                            <option value="÷">÷</option>
-                            <option value="×">×</option>
-                            <option value="-">-</option>
                         </select>
                     </div>
-
                     <div>
                         <label for="inputOfAdmin" class="block text-sm font-bold text-yellow-400">OWNER/ADMIN</label>
-                        <input type="text" id="inputOfAdmin"
-                        class="w-full p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-yellow-400"
-                        placeholder="FB Profile link or UID">
+                        <input type="text" id="inputOfAdmin" class="w-full p-2 rounded-lg bg-gray-700 text-white border focus:ring-2 focus:ring-yellow-400" placeholder="FB Profile link or UID">
                     </div>
                 </div>
                 <div class="flex justify-center">
-                    <div class="g-recaptcha"
-                        data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac"
-                        data-theme="dark"
-                        data-size="normal"
-                        data-tabindex="0"
-                        data-callback="onRecaptchaSuccess"></div>
+                    <div class="g-recaptcha" data-sitekey="6LcfYSEqAAAAAE6hRSZU1S2IeTSS6NTDUV65y6Ac" data-theme="dark"></div>
                 </div>
-                <button id="submit-button" type="submit"
-                    class="hidden w-full bg-yellow-400 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-yellow-500 transition">
-                    Submit
-                </button>
+                <button id="submit-button" type="submit" class="hidden w-full bg-yellow-400 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-yellow-500 transition">Submit</button>
             </form>
             <div id="result" class="mt-4"></div>
         </div>
-
-        <!-- Secondary Section -->
         <div class="container mx-auto mt-6 p-6 bg-gray-900 rounded-lg shadow-lg">
-            <h2 class="text-xl font-bold text-green-400 text-center">
-                Active: <span id="onlineUsers">0</span>
-            </h2>
+            <h2 class="text-xl font-bold text-green-400 text-center">Active: <span id="onlineUsers">0</span></h2>
             <div id="session-list" class="mt-4 space-y-4"></div>
-            <button id="showCommandsBtn"
-                class="w-full bg-green-500 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition mt-4">
-                CMD LIST
-            </button>
-            <div id="availableCommands" class="hidden mt-4">
-                <div id="commandsList" class="p-4 bg-gray-700 rounded-lg max-h-40 overflow-y-auto"></div>
-            </div>
+            <button id="showCommandsBtn" class="w-full bg-green-500 text-gray-900 py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition mt-4">CMD LIST</button>
+            <div id="availableCommands" class="hidden mt-4 p-4 bg-gray-700 rounded-lg max-h-40 overflow-y-auto"></div>
         </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 p-4 text-center text-sm">
-        <p>
-            Time: <span id="time"></span>
-        </p>
-        <p>
-            &copy; 2024 Kenneth Panio. All rights reserved.
-        </p>
+    <footer class="bg-gray-800 p-4 text-center text-sm text-cyan-400">
+        <p>Time: <span id="time"></span></p>
+   <!---     <p>&copy; 2024 Kenneth Panio. All rights reserved.</p> --->
     </footer>
-
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.4.0/dist/socket.io.min.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const showCommandsBtn = document.getElementById('showCommandsBtn');
-            const availableCommands = document.getElementById('availableCommands');
-            const submitButton = document.getElementById('submit-button');
-            const resultDiv = document.getElementById('result');
-            const onlineUsers = document.getElementById('onlineUsers'); // reference to active users element
-
-            // CMD List toggle
-            showCommandsBtn.addEventListener('click', () => {
-                availableCommands.classList.toggle('hidden');
-                if (!availableCommands.classList.contains('hidden')) fetchCommands();
-            });
-
-            // Fetch commands
-            function fetchCommands() {
-                axios.get('/commands').then(response => {
-                    const commandsList = document.getElementById('commandsList');
-                    commandsList.innerHTML = response.data.commands.map((cmd, idx) =>
-                        `<div>${idx + 1}. ${cmd}</div>`).join('');
-                }).catch(console.error);
-            }
-
-            // Fetch active bots from /info
-            function fetchActiveBots() {
-                axios.get('/info').then(response => {
-                    const activeBots = response.data;
-                    // Update the number of active bots
-                    onlineUsers.textContent = activeBots.length;
-                }).catch(console.error);
-            }
-
-            // Handle form submission
-            document.getElementById('cookie-form').addEventListener('submit',
-                function(event) {
-                    event.preventDefault();
-                    login();
-                });
-
-            function login() {
-                const jsonInput = document.getElementById('json-data').value;
-                const prefix = document.getElementById('inputOfPrefix').value;
-                const admin = document.getElementById('inputOfAdmin').value;
-                const recaptchaResponse = grecaptcha.getResponse();
-
-                if (!recaptchaResponse) {
-                    resultDiv.textContent = 'Please complete the CAPTCHA.';
-                    return;
-                }
-
-                try {
-                    const state = JSON.parse(jsonInput);
-                    axios.post('/login', {
-                        state, prefix, admin, recaptcha: recaptchaResponse
-                    })
-                    .then(response => {
-                        resultDiv.textContent = response.data.success ? response.data.message: 'Login failed.';
-                    })
-                    .catch(error => {
-                        if (error.response) {
-                            resultDiv.textContent = `${error.response.data.message || 'Unknown error'}`;
-                        } else {
-                            resultDiv.textContent = 'Network or connection issue occurred.';
-                        }
-                    });
-                } catch (error) {
-                    resultDiv.textContent = 'Invalid JSON input.';
-                }
-            }
-
-            function updateTime() {
-                document.getElementById('time').textContent = new Date().toLocaleTimeString();
-            }
-            setInterval(updateTime,
-                1000);
-
-            // CAPTCHA success
-            window.onRecaptchaSuccess = () => {
-                submitButton.classList.remove('hidden');
-            };
-
-            // Initial fetch of active bots on page load
-            fetchActiveBots();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
