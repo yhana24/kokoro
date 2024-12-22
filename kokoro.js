@@ -469,7 +469,7 @@ async function accountLogin(state, prefix, admin = []) {
 
                             const reply = async (msg) => {
                                 const msgInfo = await chat.reply(font.thin(msg));
-                                msgInfo?.unsend(5000);
+                                msgInfo?.unsend(15000);
                             };
 
                             const historyPath = './data/history.json';
@@ -559,17 +559,16 @@ async function accountLogin(state, prefix, admin = []) {
                             }
 
                             if (event.body && aliases(command)?.name) {
-                                const botID = api.getCurrentUserID();
                                 const now = Date.now();
                                 const name = aliases(command)?.name;
                                 const sender = Utils.cooldowns.get(
-                                    `${event.senderID}_${name}_${userid}_${botID}`
+                                    `${event.senderID}_${name}_${userid}`
                                 );
                                 const delay = aliases(command)?.cd ?? 0;
 
                                 if (!sender || now - sender.timestamp >= delay * 1000) {
                                     Utils.cooldowns.set(
-                                        `${event.senderID}_${name}_${userid}_${botID}`,
+                                        `${event.senderID}_${name}_${userid}`,
                                         {
                                             timestamp: now,
                                             command: name
@@ -611,7 +610,7 @@ async function accountLogin(state, prefix, admin = []) {
                                 const isPremiumUser = premium[senderID];
 
                                 if (!isAdmin && !isPremiumUser) {
-                                    const usageKey = `${senderID}_${commandName}_${api.getCurrentUserID}`;
+                                    const usageKey = `${senderID}_${commandName}`;
                                     const usageInfo = Utils.limited.get(usageKey);
 
                                     if (usageInfo) {
@@ -667,8 +666,7 @@ async function accountLogin(state, prefix, admin = []) {
 
 
                             if (event.type === "message_reaction") {
-                                const currentUserID = api.getCurrentUserID();
-                                if (event.senderID === currentUserID && ["🗑️", "🚮", "👎"].includes(event.reaction)) {
+                                if (event.senderID === userid && ["🗑️", "🚮", "👎"].includes(event.reaction)) {
                                     return api.unsendMessage(event.messageID);
                                 }
                             }
