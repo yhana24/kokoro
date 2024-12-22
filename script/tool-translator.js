@@ -195,7 +195,7 @@ module.exports["run"] = async ({ chat, event, args, prefix, font }) => {
             const translatedText = translationData[0].map(item => item[0]).join("");
             const sourceLanguage = languages[translationData[2] || "auto"] || "unknown";
 
-            chat.reply(font.bold(`Translation:\n\n${font.origin(translatedText)}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`));
+            chat.reply(font.thin(`Translation:\n\n${translatedText}\n\nTranslated from ${sourceLanguage} to ${languages[targetLanguage]}`));
         } catch (error) {
             chat.reply(font.thin("An error occurred while parsing the translation response."));
         }
