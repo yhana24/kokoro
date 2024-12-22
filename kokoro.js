@@ -368,8 +368,8 @@ async function accountLogin(state, prefix, admin = []) {
                         }
                     }
                 }
-                
-                const validate_uid = adminUIDs.length > 0 ? adminUIDs : admin;
+
+                const validate_uid = adminUIDs.length > 0 ? adminUIDs: admin;
 
                 const userid = await api.getCurrentUserID();
                 addThisUser(userid, state, prefix, validate_uid);
@@ -918,18 +918,23 @@ async function accountLogin(state, prefix, admin = []) {
                         const filePath = path.join(sessionFolder, file);
                         const userId = path.parse(file).name;
 
-                        const {
-                            prefix,
-                            admin,
-                            blacklist
-                        } =
-                        config.find(item => item.userid === userId) || {};
-                        const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+                        try {
 
-                        fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+                            const {
+                                prefix,
+                                admin,
+                                blacklist
+                            } =
+                            config.find(item => item.userid === userId) || {};
+                            const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
-                        const decState = decryptSession(state);
-                        await accountLogin(decState, prefix, admin, blacklist);
+                            fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
+
+                            const decState = decryptSession(state);
+                            await accountLogin(decState, prefix, admin, blacklist);
+                        } catch (error) {
+                            console.error(error);
+                        }
                     })
                 );
             } catch (error) {
