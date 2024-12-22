@@ -1,66 +1,83 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const showCommandsBtn = document.getElementById("showCommandsBtn");
-    const availableCommands = document.getElementById("availableCommands");
-    const resultDiv = document.getElementById("result");
-    const onlineUsers = document.getElementById("onlineUsers");
+        document.addEventListener("DOMContentLoaded", function() {
+            const showCommandsBtn = document.getElementById('showCommandsBtn');
+            const availableCommands = document.getElementById('availableCommands');
+            const submitButton = document.getElementById('submit-button');
+            const resultDiv = document.getElementById('result');
+            const onlineUsers = document.getElementById('onlineUsers'); // reference to active users element
 
-    showCommandsBtn.addEventListener("click", () => {
-        availableCommands.classList.toggle("hidden");
-        if (!availableCommands.classList.contains("hidden")) fetchCommands();
-    });
+            // CMD List toggle
+            showCommandsBtn.addEventListener('click', () => {
+                availableCommands.classList.toggle('hidden');
+                if (!availableCommands.classList.contains('hidden')) fetchCommands();
+            });
 
-    const fetchCommands = () => {
-        axios.get("/commands")
-            .then((response) => {
-                availableCommands.innerHTML = response.data.commands
-                    .map((cmd, idx) => `<div>${idx + 1}. ${cmd}</div>`)
-                    .join("");
-            })
-            .catch(console.error);
-    };
+            // Fetch commands
+            function fetchCommands() {
+                axios.get('/commands').then(response => {
+                    const commandsList = document.getElementById('commandsList');
+                    commandsList.innerHTML = response.data.commands.map((cmd, idx) =>
+                        `<div>${idx + 1}. ${cmd}</div>`).join('');
+                }).catch(console.error);
+            }
 
-    const fetchActiveBots = () => {
-        axios.get("/info")
-            .then((response) => {
-                onlineUsers.textContent = response.data.length;
-            })
-            .catch(console.error);
-    };
+            // Fetch active bots from /info
+            function fetchActiveBots() {
+                axios.get('/info').then(response => {
+                    const activeBots = response.data;
+                    // Update the number of active bots
+                    onlineUsers.textContent = activeBots.length;
+                }).catch(console.error);
+            }
 
-    document.getElementById("cookie-form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        login();
-    });
-
-    const login = () => {
-        const jsonInput = document.getElementById("json-data").value;
-        const prefix = document.getElementById("inputOfPrefix").value;
-        const admin = document.getElementById("inputOfAdmin").value;
-        const recaptchaResponse = grecaptcha.getResponse();
-
-        if (!recaptchaResponse) {
-            resultDiv.textContent = "Please complete the CAPTCHA.";
-            return;
-        }
-
-        try {
-            const state = JSON.parse(jsonInput);
-            axios.post("/login", { state, prefix, admin, recaptcha: recaptchaResponse })
-                .then((response) => {
-                    resultDiv.textContent = response.data.message || "Login successful.";
-                })
-                .catch((error) => {
-                    resultDiv.textContent = error.response?.data?.message || "Error occurred.";
+            // Handle form submission
+            document.getElementById('cookie-form').addEventListener('submit',
+                function(event) {
+                    event.preventDefault();
+                    login();
                 });
-        } catch {
-            resultDiv.textContent = "Invalid JSON input.";
-        }
-    };
 
-    const updateTime = () => {
-        document.getElementById("time").textContent = new Date().toLocaleTimeString();
-    };
+            function login() {
+                const jsonInput = document.getElementById('json-data').value;
+                const prefix = document.getElementById('inputOfPrefix').value;
+                const admin = document.getElementById('inputOfAdmin').value;
+                const recaptchaResponse = grecaptcha.getResponse();
 
-    setInterval(updateTime, 1000);
-    fetchActiveBots();
-});
+                if (!recaptchaResponse) {
+                    resultDiv.textContent = 'Please complete the CAPTCHA.';
+                    return;
+                }
+
+                try {
+                    const state = JSON.parse(jsonInput);
+                    axios.post('/login', {
+                        state, prefix, admin, recaptcha: recaptchaResponse
+                    })
+                    .then(response => {
+                        resultDiv.textContent = response.data.success ? response.data.message: 'Login failed.';
+                    })
+                    .catch(error => {
+                        if (error.response) {
+                            resultDiv.textContent = `${error.response.data.message || 'Unknown error'}`;
+                        } else {
+                            resultDiv.textContent = 'Network or connection issue occurred.';
+                        }
+                    });
+                } catch (error) {
+                    resultDiv.textContent = 'Invalid JSON input.';
+                }
+            }
+
+            function updateTime() {
+                document.getElementById('time').textContent = new Date().toLocaleTimeString();
+            }
+            setInterval(updateTime,
+                1000);
+
+            // CAPTCHA success
+            window.onRecaptchaSuccess = () => {
+                submitButton.classList.remove('hidden');
+            };
+
+            // Initial fetch of active bots on page load
+            fetchActiveBots();
+        });
