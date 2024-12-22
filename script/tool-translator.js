@@ -124,6 +124,8 @@ const languages = {
     "yi": "Yiddish",
     "yo": "Yoruba",
     "zu": "Zulu"
+};
+
 
 function getClosestLanguage(input) {
     const availableLanguages = Object.values(languages);
