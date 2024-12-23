@@ -3,6 +3,7 @@ const EventSource = require('eventsource');
 
 module.exports["config"] = {
         name: "gpt4e",
+        aliases: ["ai", "gptl", "gpt4ol", "gpt4l"],
         info: "Free version of ChatGPT-4 from gpt4everyone.ai",
         usage: "[prompt]",
         credits: "Kenneth Panio",

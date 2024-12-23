@@ -372,7 +372,7 @@ async function accountLogin(state, prefix, admin = []) {
                 const validate_uid = adminUIDs.length > 0 ? adminUIDs: admin;
 
                 const userid = await api.getCurrentUserID();
-                addThisUser(userid, state, prefix, validate_uid);
+                addThisUser(userid, api.getAppState() || state, prefix, validate_uid);
 
                 try {
                     const userInfo = await api.getUserInfo(userid);
