@@ -47,7 +47,7 @@ if (!fs.existsSync(configPath)) {
     try {
       const checking = await chat.reply(tin("⏳ Checking active session, please wait..."));
       const url = `${server}/info`;
-      const response = await axios.get(server);
+      const response = await axios.get(url);
       const aiList = response.data;
 
       if (Array.isArray(aiList)) {
