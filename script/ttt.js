@@ -24,16 +24,16 @@ module.exports["run"] = async ({ chat, args, event, Utils, font, global }) => {
     return;
   }
 
+  // Ask the user to choose their side
   handleReply = {
-    type: "tictactoe",
+    type: "choose_side",
     author: senderID,
-    board: Array(9).fill("⬛"),
-    playerTurn: true,
-    sentMessages: [] // Track sent messages
+    board: Array.from({ length: 9 }, (_, i) => `${i + 1}️⃣`), // Fill board with numeric placeholders
+    sentMessages: [],
   };
   Utils.handleReply.push(handleReply);
 
-  const message = await chat.reply(mono("Game started! You are X. Reply with a number (1-9) to make your move.\n" + formatBoard(handleReply.board)));
+  const message = await chat.reply(mono("Choose your side: Reply with `x` for ❌ or `o` for ⭕."));
   handleReply.sentMessages.push(message);
 };
 
@@ -59,56 +59,49 @@ function checkWinner(board) {
 
   for (const combination of winningCombinations) {
     const [a, b, c] = combination;
-    if (board[a] !== "⬛" && board[a] === board[b] && board[a] === board[c]) {
+    if (board[a] === board[b] && board[a] === board[c] && !board[a].includes("️⃣")) {
       return board[a];
     }
   }
 
-  return board.includes("⬛") ? null : "draw";
+  return board.some(cell => cell.includes("️⃣")) ? null : "draw";
 }
 
-function botMove(board) {
-  const emptyIndices = board.map((val, idx) => (val === "⬛" ? idx : null)).filter(val => val !== null);
+function botMove(board, botSymbol) {
+  const playerSymbol = botSymbol === "⭕" ? "❌" : "⭕";
+  const emptyIndices = board
+    .map((val, idx) => (val.includes("️⃣") ? idx : null))
+    .filter(val => val !== null);
 
-  // Simulate occasional mistake
-  if (Math.random() < 0.2) { // 20% chance of making a mistake
+  // 20% chance of making a mistake
+  if (Math.random() < 0.2) {
     const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-    board[randomIndex] = "⭕"; // Make a random move
-  } else {
-    // Implement basic strategy to prioritize winning or blocking opponent
-    let moveMade = false;
-
-    // Check for winning move
-    for (let i = 0; i < emptyIndices.length; i++) {
-      const index = emptyIndices[i];
-      board[index] = "⭕";
-      if (checkWinner(board) === "⭕") {
-        moveMade = true;
-        break;
-      }
-      board[index] = "⬛"; // Reset board after checking
-    }
-
-    // If no winning move, check for blocking opponent
-    if (!moveMade) {
-      for (let i = 0; i < emptyIndices.length; i++) {
-        const index = emptyIndices[i];
-        board[index] = "❌";
-        if (checkWinner(board) === "❌") {
-          board[index] = "⭕"; // Block opponent
-          moveMade = true;
-          break;
-        }
-        board[index] = "⬛"; // Reset board after checking
-      }
-    }
-
-    // If neither winning nor blocking move, make a random move
-    if (!moveMade) {
-      const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-      board[randomIndex] = "⭕";
-    }
+    board[randomIndex] = botSymbol;
+    return;
   }
+
+  // Try to win if possible
+  for (const index of emptyIndices) {
+    board[index] = botSymbol;
+    if (checkWinner(board) === botSymbol) {
+      return;
+    }
+    board[index] = `${index + 1}️⃣`; // Reset to numeric placeholder
+  }
+
+  // Try to block the player's winning move
+  for (const index of emptyIndices) {
+    board[index] = playerSymbol;
+    if (checkWinner(board) === playerSymbol) {
+      board[index] = botSymbol; // Block the player
+      return;
+    }
+    board[index] = `${index + 1}️⃣`; // Reset to numeric placeholder
+  }
+
+  // Make a random move if no winning or blocking move is found
+  const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+  board[randomIndex] = botSymbol;
 }
 
 module.exports["handleReply"] = async ({ chat, event, Utils, font, global }) => {
@@ -117,46 +110,70 @@ module.exports["handleReply"] = async ({ chat, event, Utils, font, global }) => 
 
   let handleReply = Utils.handleReply.find(reply => reply.author === senderID);
 
-  if (!handleReply || handleReply.type !== "tictactoe") {
+  if (!handleReply) {
     return;
   }
 
-  const unsendAllMessages = async () => {
-    for (const msg of handleReply.sentMessages) {
-      await msg.unsend();
+  if (handleReply.type === "choose_side") {
+    const choice = body.trim().toLowerCase();
+    if (choice !== "x" && choice !== "o") {
+      await chat.reply(mono("Invalid choice. Reply with `x` for ❌ or `o` for ⭕."));
+      return;
     }
-    handleReply.sentMessages = [];
-  };
 
-  const move = parseInt(body.trim(), 10) - 1;
+    handleReply.playerSymbol = choice === "x" ? "❌" : "⭕";
+    handleReply.botSymbol = choice === "x" ? "⭕" : "❌";
+    handleReply.type = "tictactoe";
 
-  if (isNaN(move) || move < 0 || move > 8 || handleReply.board[move] !== "⬛") {
-    await chat.reply(mono("Invalid move. Reply with a number (1-9) corresponding to an empty spot on the board."));
-    return;
-  }
-
-  await unsendAllMessages();
-
-  handleReply.board[move] = "❌";
-
-  let winner = checkWinner(handleReply.board);
-  if (winner) {
-    const message = await chat.reply(mono(`Game over! ${winner === "draw" ? "It's a draw!" : `Winner: ${winner}`}\n` + formatBoard(handleReply.board)));
+    const message = await chat.reply(
+      mono(`You chose ${handleReply.playerSymbol}. Game started! Reply with a number (1-9) to make your move.\n` + formatBoard(handleReply.board))
+    );
     handleReply.sentMessages.push(message);
-    Utils.handleReply = Utils.handleReply.filter(reply => reply.author !== senderID);
     return;
   }
 
-  botMove(handleReply.board);
+  if (handleReply.type === "tictactoe") {
+    const move = parseInt(body.trim(), 10) - 1;
 
-  winner = checkWinner(handleReply.board);
-  if (winner) {
-    const message = await chat.reply(mono(`Game over! ${winner === "draw" ? "It's a draw!" : `Winner: ${winner}`}\n` + formatBoard(handleReply.board)));
+    if (isNaN(move) || move < 0 || move > 8 || !handleReply.board[move].includes("️⃣")) {
+      await chat.reply(mono("Invalid move. Reply with a number (1-9) corresponding to an empty spot on the board."));
+      return;
+    }
+
+    const unsendAllMessages = async () => {
+      for (const msg of handleReply.sentMessages) {
+        await msg.unsend();
+      }
+      handleReply.sentMessages = [];
+    };
+
+    await unsendAllMessages();
+
+    handleReply.board[move] = handleReply.playerSymbol;
+
+    let winner = checkWinner(handleReply.board);
+    if (winner) {
+      const message = await chat.reply(
+        mono(`Game over! ${winner === "draw" ? "It's a draw!" : `Winner: ${winner}`}\n` + formatBoard(handleReply.board))
+      );
+      handleReply.sentMessages.push(message);
+      Utils.handleReply = Utils.handleReply.filter(reply => reply.author !== senderID);
+      return;
+    }
+
+    botMove(handleReply.board, handleReply.botSymbol);
+
+    winner = checkWinner(handleReply.board);
+    if (winner) {
+      const message = await chat.reply(
+        mono(`Game over! ${winner === "draw" ? "It's a draw!" : `Winner: ${winner}`}\n` + formatBoard(handleReply.board))
+      );
+      handleReply.sentMessages.push(message);
+      Utils.handleReply = Utils.handleReply.filter(reply => reply.author !== senderID);
+      return;
+    }
+
+    const message = await chat.reply(mono("Your turn! Reply with a number (1-9) to make your move.\n" + formatBoard(handleReply.board)));
     handleReply.sentMessages.push(message);
-    Utils.handleReply = Utils.handleReply.filter(reply => reply.author !== senderID);
-    return;
   }
-
-  const message = await chat.reply(mono("Your turn! Reply with a number (1-9) to make your move.\n" + formatBoard(handleReply.board)));
-  handleReply.sentMessages.push(message);
 };
