@@ -57,7 +57,7 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
             userSystemPrompt: null,
             visitFromDelta: false,
             mobileClient: false,
-            maxTokens: '999999999999'
+            maxTokens: '1024'
         }, {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
         });
