@@ -42,21 +42,10 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
 
     const getResponse = async () => {
         return axios.post(global.api["chatbox"], {
-            messages: [{ role: "user", content: query }], // No conversation history
-            clickedContinue: false,
-            previewToken: null,
+            messages: [{ role: "user", content: query }],
             codeModelMode,
-            agentMode: {},
-            trendingAgentMode: {},
-            isMicMode: false,
-            isChromeExt: false,
-            clickedAnswer2: false,
-            clickedAnswer3: false,
             githubToken: atob("Z2hwX3V5VEZydEViQ051WjVQaVdhV3d3bHlrT1dnR0p2OTM5NEk4Mg=="),
             webSearchMode,
-            userSystemPrompt: null,
-            visitFromDelta: false,
-            mobileClient: false,
             maxTokens: '1024'
         }, {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
