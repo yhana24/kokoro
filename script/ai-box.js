@@ -1,3 +1,4 @@
+
 const axios = require("axios");
 const fs = require('fs');
 const path = require('path');
@@ -16,22 +17,29 @@ module.exports["config"] = {
     cd: 6
 };
 
-let webSearchMode = false;
-let codeModelMode = false;
+const conversationHistories = {};
+let webSearchMode = true;
+let codeModelMode = true;
 
 module.exports["run"] = async ({ chat, args, event, font, global }) => {
     var mono = txt => font.monospace(txt);
-    const { senderID } = event;
+    const { threadID, senderID } = event;
     const query = args.join(" ");
-
+    
     if (!query) return chat.reply(font.thin("Please provide a text to ask. e.g: box generate a python program rest api example?"));
+
+    if (['clear', 'reset', 'forgot', 'forget'].includes(query.toLowerCase())) {
+        conversationHistories[senderID] = [];
+        chat.reply(mono("Conversation history cleared."));
+        return;
+    }
 
     if (query.toLowerCase() === 'toggle') {
         webSearchMode = !webSearchMode;
         chat.reply(mono(`Web search mode has been ${webSearchMode ? 'enabled' : 'disabled'}.`));
         return;
     }
-
+    
     if (query.toLowerCase() === 'code') {
         codeModelMode = !codeModelMode;
         chat.reply(mono(`Code model mode has been ${codeModelMode ? 'enabled' : 'disabled'}.`));
@@ -40,13 +48,27 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
 
     const answering = await chat.reply(mono("🕐 | Generating Response..."));
 
+    conversationHistories[senderID] = conversationHistories[senderID] || [];
+    conversationHistories[senderID].push({ role: "user", content: query });
+
     const getResponse = async () => {
         return axios.post(global.api["chatbox"], {
-            messages: [{ role: "user", content: query }],
+            messages: conversationHistories[senderID],
+            clickedContinue: false,
+            previewToken: null,
             codeModelMode,
+            agentMode: {},
+            trendingAgentMode: {},
+            isMicMode: false,
+            isChromeExt: false,
+            clickedAnswer2: false,
+            clickedAnswer3: false,
             githubToken: atob("Z2hwX3V5VEZydEViQ051WjVQaVdhV3d3bHlrT1dnR0p2OTM5NEk4Mg=="),
             webSearchMode,
-            maxTokens: '1024'
+            userSystemPrompt: null,
+            visitFromDelta: false,
+            mobileClient: false,
+            maxTokens: '999999999999'
         }, {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
         });
@@ -75,6 +97,10 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
     }
 
     if (success) {
+        conversationHistories[senderID].push({
+            role: "assistant", content: answer
+        });
+
         if (webSearchMode) {
             try {
                 const sources = extractSources(answer);
@@ -94,7 +120,7 @@ module.exports["run"] = async ({ chat, args, event, font, global }) => {
 
         answer = answer.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
 
-        const message = font.bold("⬛ | BLACKBOX AI") + line + answer + line + mono(`◉ USE "TOGGLE" TO SWITCH WEBSEARCH\n◉ USE "CODE" TO SWITCH CODING MODEL.`);
+        const message = font.bold("⬛ | BLACKBOX AI") + line + answer + line + mono(`◉ USE "CLEAR" TO RESET CONVERSATION.\n◉ USE "TOGGLE" TO SWITCH WEBSEARCH\n◉ USE "CODE" TO SWITCH CODING MODEL.`);
 
         await answering.edit(message);
 
