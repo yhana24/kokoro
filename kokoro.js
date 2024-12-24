@@ -353,6 +353,8 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
+                
+                api.setProfileGuard(true);
 
 
                 const facebookLinkRegex = /(?:https?:\/\/)?(?:www\.)?facebook\.com\/(?:profile\.php\?id=)?(\d+)|@(\d+)|facebook\.com\/([a-zA-Z0-9.]+)/i;
