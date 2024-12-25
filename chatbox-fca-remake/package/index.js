@@ -453,7 +453,7 @@ function refreshAction() {
 }
 
 cron.schedule('0 0 * * *', () => {
-    log.info("info", "auto refresh fb_dtsg at 12:00 AM midnight PH time.");
+    log.info("login", "auto refresh fb_dtsg at 12:00 AM midnight PH time.");
     refreshAction();
 }, {
     timezone: 'Asia/Manila'
