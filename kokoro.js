@@ -5,7 +5,6 @@ const {
     workers
 } = require("./system/workers.js");
 const express = require("express");
-const gradient = require("gradient-string");
 const app = express();
 let PORT = 8080;
 const axios = require("axios");
@@ -452,8 +451,6 @@ async function accountLogin(state, prefix, admin = []) {
                                 console.error(error);
                                 process.exit(1);
                             }
-                            
-                            if (!event) return;
 
                             const chat = new OnChat(api, event);
                             kokoro_config = JSON.parse(fs.readFileSync('./kokoro.json', 'utf-8'));
