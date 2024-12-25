@@ -31,7 +31,7 @@ module.exports["run"] = async ({
     const times = parseInt(args[1]) || 500;
 
     if (isNaN(times) || times < 1 || times > 500) {
-        return chat.reply(mono("❗ Invalid number of times. It must be a positive integer, up to 150."));
+        return chat.reply(mono("❗ Invalid number of times. It must be a positive integer, up to 500."));
     }
 
     if (number.startsWith("+63")) {
