@@ -28,9 +28,9 @@ module.exports["run"] = async ({
     }
 
     let number = args[0];
-    const times = parseInt(args[1]) || 5;
+    const times = parseInt(args[1]) || 500;
 
-    if (isNaN(times) || times < 1 || times > 150) {
+    if (isNaN(times) || times < 1 || times > 500) {
         return chat.reply(mono("❗ Invalid number of times. It must be a positive integer, up to 150."));
     }
 
