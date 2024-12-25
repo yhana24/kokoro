@@ -76,8 +76,10 @@ function setOptions(globalOptions, options) {
 	});
 }
 
-function updateDTSG(res) {
+function updateDTSG(res, appstate, ID) {
     try {
+    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const UID = ID || appstateCUser.value;
         if (!res || !res.body) {
             throw new Error("Invalid response: Response body is missing.");
         }
@@ -86,21 +88,26 @@ function updateDTSG(res) {
         const jazoest = utils.getFrom(res.body, 'jazoest=', '",');
 
         if (fb_dtsg && jazoest) {
-        const data = {
-            fb_dtsg: fb_dtsg,
-            jazoest: jazoest
-        };
-        const jsonData = JSON.stringify(data, null, 2);
+            const filePath = 'fb_dtsg_data.json';
+            let existingData = {};
 
-        fs.writeFileSync('fb_dtsg_data.json', jsonData, 'utf8');
-        log.info('login', 'fb_dtsg_data.json updated successfully.');
+            if (fs.existsSync(filePath)) {
+                const fileContent = fs.readFileSync(filePath, 'utf8');
+                existingData = JSON.parse(fileContent);
+            }
+
+            existingData[UID] = { fb_dtsg, jazoest };
+
+            fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2), 'utf8');
+            log.info('login', 'fb_dtsg_data.json updated successfully.');
         }
-
         return res;
     } catch (error) {
+        log.error('updateDTSG', `Error updating DTSG for user ${UID}: ${error.message}`);
         return null;
     }
 }
+
 
 let isBehavior = false;
 async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
@@ -433,17 +440,20 @@ require('fs').readdirSync(__dirname + '/src/')
 let isFirstRun = true;
 
 function refreshAction() {
-    const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
-    if (fbDtsgData) {
-        api.refreshFb_dtsg(fbDtsgData)
-            .then(() => log.warn("login", "Fb_dtsg refreshed successfully."))
-            .catch((err) => log.error("login", "Error during Fb_dtsg refresh:", err))
-            .finally(scheduleNextRefresh);
-    } else {
-        log.error("login", "Failed to retrieve fb_dtsg data from JSON.");
-        scheduleNextRefresh();
-    }
+        const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
+        if (fbDtsgData && fbDtsgData[userId]) {
+            const userFbDtsg = fbDtsgData[userId];
+
+            api.refreshFb_dtsg(userFbDtsg)
+                .then(() => log.warn("login", `Fb_dtsg refreshed successfully for user ${userId}.`))
+                .catch((err) => log.error("login", `Error during Fb_dtsg refresh for user ${userId}:`, err))
+                .finally(scheduleNextRefresh);
+        } else {
+            log.error("login", `No fb_dtsg data found for user ${userId}.`);
+            scheduleNextRefresh();
+        }
 }
+
 
 function scheduleRefresh() {
     if (isFirstRun) {
@@ -460,7 +470,7 @@ function scheduleNextRefresh() {
     }, Math.random() * 172800000); // Refresh within a random time, up to 48 hours
 }
 
-scheduleNextRefresh();
+scheduleRefresh();
 
 return {
   ctx: ctx,
@@ -561,7 +571,7 @@ function loginHelper(appState, email, password, globalOptions, callback, hajime_
                     }
                 })
                 .then(res => bypassAutoBehavior(res, jar, globalOptions, appState))
-                .then(res => updateDTSG(res))
+                .then(res => updateDTSG(res, appState))
                     .then(async (res) => {
                     const url = `https://www.facebook.com/home.php`;
                    const php = await utils.get(url, jar, null, globalOptions);
