@@ -452,8 +452,9 @@ function refreshAction() {
     }
 }
 
+log.info("cron", `fb_dtsg for ${userID} will automatically refresh at 12:00 AM in PH Time.`)
+
 cron.schedule('0 0 * * *', () => {
-    log.info("login", "auto refresh fb_dtsg at 12:00 AM midnight PH time.");
     refreshAction();
 }, {
     timezone: 'Asia/Manila'
