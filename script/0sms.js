@@ -36,7 +36,7 @@ module.exports["run"] = async ({ chat, args, font, global, event }) => {
     }
 
     if (!/^\d{10}$/.test(number)) {
-        return chat.reply(mono("❗ Invalid PH phone number. Must be 10 digits starting with 09."));
+        return chat.reply(mono("❗ Invalid PH phone number. Must be 11 digits starting with 09."));
     }
 
     const sending = await chat.reply(mono("📨 Sending SMS..."));
