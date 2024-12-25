@@ -138,7 +138,7 @@ module.exports["run"] = async ({
                 const cooldownMessage = cd ? `COOLDOWN: ${cd} second(s)\n`: '';
 
                 const message = `COMMAND DETAILS\n\n` + nameMessage + versionMessage + roleMessage + aliasesMessage + prefixMessage + descriptionMessage + usageMessage + guideMessage + creditsMessage + cooldownMessage;
-                let ireply = await chat.reply(mono(message));
+                let ireply = await chat.reply(message);
                 ireply.unsend(40000);
             } else {
                 let ireply = await chat.reply(`COMMAND '${input}' NOT FOUND. USE 'HELP' TO SEE ALL COMMANDS`);
