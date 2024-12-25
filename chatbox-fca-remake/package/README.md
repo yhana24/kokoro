@@ -1,157 +1,162 @@
-
 ---
 
-# chatbox-fca-remake - Unofficial Facebook Chat API
+# Chatbox-FCA-Remake - Unofficial Facebook Chat API
 
-This is a fork of the original [fca-unofficial](https://github.com/azlux/facebook-chat-api) repository. This version includes new features and updates that are bundled faster than the main repository. However, be aware that new features may also come with some bugs.
+**Chatbox-FCA-Remake** is a fork of the original [fca-unofficial](https://github.com/azlux/facebook-chat-api) repository. This version includes new features and updates that are integrated faster than the main repository. Please note that while new features offer added functionality, they may also introduce bugs.
 
 ---
 
 ## Overview
 
-This API allows you to automate Facebook chat functionalities by emulating the browser's GET/POST requests. It does not work with an auth token and requires a Facebook account's **AppState** (session information), which is obtained via third-party tools.
+The **Chatbox-FCA-Remake** API allows you to automate Facebook chat functionalities by emulating the browser's GET/POST requests. Unlike the official API, it does not use an authentication token and instead requires the **AppState** (session information) from a previously authenticated Facebook session, which can be obtained using third-party tools.
 
 ---
 
 ## Important Notes
 
-### **Login via Credentials Is No Longer Supported**
+### **Login via Credentials No Longer Supported**
 
-Due to recent changes, the ability to log in using **credentials** (i.e., email and password) directly through the API has been disabled. As a result, you cannot use the old login method with your email and password anymore.
+Due to recent updates, logging in using **credentials** (email and password) directly through the API is no longer supported. You can no longer use the old login method based on email and password.
 
-### **api.getAppState finally works!**
+### **AppState Support**
 
-To use the API, you need to provide an **AppState** (session information) from a previously authenticated session. You can use **`api.getAppState()`** to retrieve and even update your **AppState** after login.
+To use the API, you need to provide an **AppState** from a previously authenticated session. You can retrieve and even update your **AppState** with the **`api.getAppState()`** function after logging in.
 
-- **Kiwi Browser & c3c-ufc-utility Extension**: Extract the **AppState** using the **Kiwi Browser** along with the **c3c-ufc-utility extension** to obtain session cookies after logging into Facebook manually.
+- **Kiwi Browser & c3c-ufc-utility Extension**: Use the **Kiwi Browser** along with the **c3c-ufc-utility extension** to extract the **AppState** after logging into Facebook manually.
 
-Once you have the **AppState**, you can load it into the API to authenticate. Additionally, **`api.getAppState()`** can now be used to **update the AppState** during the session.
+Once you have the **AppState**, load it into the API to authenticate. You can also use **`api.getAppState()`** to update the AppState during your session.
 
-We strongly recommend being responsible when using this API to avoid issues like account bans. Avoid spamming messages, sending large amounts of requests, or using excessive automation.
+Please use the API responsibly to avoid account bans, which may result from excessive automation or spamming.
 
 ---
 
 ## New Features
 
-### 1. **BypassAutomationBehavior**
+### 1. **Bypass Automatic Behavior Detection**
 
-This feature is designed to bypass certain behavior detection mechanisms from Facebook, which may otherwise flag your actions as automated. By enabling this, your bot's activity will appear more like human interaction, helping reduce the risk of account limitations.
+This feature helps bypass Facebook's behavior detection mechanisms, reducing the likelihood that your bot's activity will be flagged as automated.
 
-- **Configuration**: Can be toggled on or off in the `NextGen-FCA.json` configuration file.
+### 2. **Auto Refresh for fb_dtsg Token**
 
-### 2. **AutoRefreshFbDtsg**
+The **AutoRefreshFbDtsg** feature automatically refreshes the **fb_dtsg** token, ensuring your session remains active without needing to log in again. This is especially useful as **fb_dtsg** tokens expire periodically.
 
-This feature automatically refreshes the **fb_dtsg** token, which is used for secure communication with Facebook. Since **fb_dtsg** tokens expire periodically, this feature ensures your session stays active by refreshing the token automatically without requiring a manual login.
+![Example 1](https://i.imgur.com/U8RfmLc.jpeg)
+![Example 2](https://i.imgur.com/WKXm6NR.jpeg)
 
-- **Configuration**: Can be toggled on or off in the `NextGen-FCA.json` configuration file.
-
----
-
-## How to Get AppState
-
-1. **Kiwi Browser & c3c-ufc-utility Extension**
-   - Install **Kiwi Browser** and the **c3c-ufc-utility extension**.
-   - Use the extension to extract your **AppState** (session cookies) from your Facebook login.
-   - Save the **AppState** as a `appstate.json` file and load it for logging in.
-
-For more details, check the official [c3c-ufc-utility GitHub release](https://github.com/c3cbot/c3c-ufc-utility/releases).
+If other FCAs lack this feature, they may encounter errors, as shown below:
+![Error Example](https://i.imgur.com/vdzHs0i.jpeg)
 
 ---
 
-## Install
+## How to Obtain AppState
 
-To install **chatbox-fca-remake**, use the following npm command:
+### **Kiwi Browser & c3c-ufc-utility Extension**
+
+1. Install the **Kiwi Browser**.
+2. Add the **c3c-ufc-utility extension** to the browser.
+3. Use the extension to extract your **AppState** (session cookies) after manually logging into Facebook.
+4. Save the **AppState** as a `appstate.json` file and load it into your API configuration.
+
+For detailed instructions, refer to the official [c3c-ufc-utility GitHub release](https://github.com/c3cbot/c3c-ufc-utility/releases).
+
+---
+
+## Installation
+
+To install **chatbox-fca-remake**, run the following npm command:
 
 ```bash
 npm install chatbox-fca-remake
 ```
 
-To install the bleeding-edge version directly from GitHub:
+For the latest development version directly from GitHub:
 
 ```bash
-npm install chatbox-fca-remake
+npm install git+https://github.com/your/repository.git
 ```
 
 ---
 
 ## Example Usage
 
-Here’s how to log in using **AppState**:
+Here’s an example of bot and how to log in using your **AppState**:
 
 ```javascript
-const fs = require('fs');
-const login = require('chatbox-fca-remake');
+const fs = require("fs");
+const login = require("chatbox-fca-remake");
 
-// Load your appState from the saved file
-const appState = JSON.parse(fs.readFileSync('appstate.json', 'utf8'));
+// Simple bot that responds when you say "test" or "/stop"
+login({
+    appState: JSON.parse(fs.readFileSync('test.json', 'utf8'))  // Load AppState from the saved JSON file
+}, (err, api) => {
+    if (err) return console.error(err);  // Handle login errors
 
-// Use the appState for login
-login({ appState: appState }, (err, api) => {
-    if (err) return console.error('Login failed:', err);
-
-    console.log('Successfully logged in!');
-
-    // Example of listening for new messages
-    api.listen((err, message) => {
-        if (err) return console.error(err);
-
-        // Respond to the received message
-        api.sendMessage(message.body, message.threadID);
+    // Set the bot's options for its behavior and connection
+    api.setOptions({
+        forceLogin: true,  // Force login even if the session is active
+        listenEvents: true,  // Enable event listening
+        logLevel: "silent",  // Set log level to silent (no logs)
+        updatePresence: true,  // Keep the presence (status) updated
+        selfListen: false,  // Do not listen to the bot's own messages
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:118.0) Gecko/20100101 Firefox/118.0",  // Set custom user agent for the bot
+        online: false,  // Keep the bot offline or Set it to true if you want to see bots online status.
+        autoMarkDelivery: false,  // Disable auto marking of delivery status
+        autoMarkRead: false  // Disable auto marking of messages as read
     });
 
-    // Get and update AppState if needed
-    const updatedAppState = api.getAppState();
-    fs.writeFileSync('appstate.json', JSON.stringify(updatedAppState));
+    // Start listening for incoming messages and events
+    const stopListening = api.listenMqtt((err, event) => {
+        if (err) return console.error(err);  // Handle any errors while listening
+
+        // Switch case to handle different types of events
+        switch (event.type) {
+            case "message":
+                if (event.body === '/stop') {  // If the message is "/stop"
+                    api.sendMessage("Goodbye…", event.threadID);  // Send "Goodbye" message
+                    return stopListening();  // Stop listening to events
+                }
+                if (event.body.toLowerCase() === 'test') {  // If the message is "test" (case-insensitive)
+                    api.sendMessage("TEST BOT: " + event.body, event.threadID);  // Send a test response
+                }
+                break;
+            case "event":
+                console.log(event);  // Log any other event type
+                break;
+        }
+    });
 });
 ```
-
-### Configuration (`NextGen-FCA.json`)
-
-The following options can be configured in your `NextGen-FCA.json` file:
-
-```json
-{
-  "BypassAutomationBehavior": true,  // Set to false to disable this feature
-  "AutoRefreshFbDtsg": true         // Set to false to disable this feature
-}
-```
-
-- **BypassAutomationBehavior**: Enables or disables the feature to bypass Facebook's automated behavior detection.
-- **AutoRefreshFbDtsg**: Enables or disables automatic refreshing of the **fb_dtsg** token to keep your session active.
 
 ---
 
 ## Main Functionality
 
 - **Sending Messages:**
-    - Regular Text Messages
+    - Text Messages
     - Sticker Messages
     - Image/File Attachments
     - URLs
     - Emojis
 
-- **Listening to Messages:**
-    - Listen to messages in real-time
-    - Option to listen to events like user joining or leaving a chat
+- **Listening for Messages:**
+    - Real-time message listening
+    - Event listeners for actions like user joining or leaving a chat
 
 ---
 
 ## FAQ
 
-1. **How can I log in without credentials?**
-   - After logging in through a browser, extract your **AppState** using the **c3c-ufc-utility extension**. This is now the only way to authenticate.
+1. **How do I log in without credentials?**
+   - After logging into Facebook manually, extract your **AppState** using the **c3c-ufc-utility extension**. This is the only supported authentication method.
 
-2. **Can I listen to messages from the bot?**
-   - Yes, by default, the bot listens to incoming messages and can respond automatically. You can configure it to respond with specific actions based on the message content.
+2. **Can I listen for messages from the bot?**
+   - Yes, the bot can listen to incoming messages and automatically respond. You can customize the responses based on message content.
 
-3. **Is there a way to send media like images or files?**
-   - Yes, you can send files or images by passing them as attachments. The example provided demonstrates how to send an image along with a text message.
+3. **Can I send media like images or files?**
+   - Yes, you can send images or files as attachments, as demonstrated in the example usage.
 
 4. **How do I keep my session alive?**
-   - You do not need to log in repeatedly once you have your **AppState** saved. Simply load the **appState.json** each time you initialize the API.
-
-5. **Can I send messages as a Facebook Page?**
-   - Yes, you can configure the login to use a Facebook Page ID for sending messages as a Page. This is done during the login step.
+   - Once your **AppState** is saved, you can reuse it to authenticate without needing to log in again.
 
 ---
 
@@ -164,24 +169,23 @@ The following options can be configured in your `NextGen-FCA.json` file:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ---
 
 ## Contact & Community
 
-If you have a problem with this FCA, you can contact us by clicking here:
+For support or inquiries, contact:
 
 - [JR Busaco](https://www.facebook.com/jr.busaco.271915)
 - [Haji Atomyc](https://www.facebook.com/haji.atomyc2727)
 
-Join our group **ChatBot Community**:
+Join our **ChatBot Community**:
 
 - [ChatBot Community](https://www.facebook.com/groups/coders.dev)
 
 ---
 
-**Note:** This project is an unofficial Facebook chat API. Use it responsibly and follow Facebook’s terms of service.
+**Note:** This project is an unofficial Facebook chat API. Please use it responsibly and in accordance with Facebook's terms of service.
 
----
-
+--- 
