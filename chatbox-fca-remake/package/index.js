@@ -79,7 +79,7 @@ function setOptions(globalOptions, options) {
 
 function updateDTSG(res, appstate, ID) {
     try {
-    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const appstateCUser = (appstate.find(i => i.key == 'i_user') || appstate.find(i => i.key == 'c_user'))
     const UID = ID || appstateCUser.value;
         if (!res || !res.body) {
             throw new Error("Invalid response: Response body is missing.");
@@ -113,7 +113,7 @@ function updateDTSG(res, appstate, ID) {
 let isBehavior = false;
 async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
   try {
-    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const appstateCUser = (appstate.find(i => i.key == 'i_user') || appstate.find(i => i.key == 'c_user'))
     const UID = ID || appstateCUser.value;
     const FormBypass = {
       av: UID,
@@ -152,7 +152,7 @@ async function bypassAutoBehavior(resp, jar, globalOptions, appstate, ID) {
 
 async function checkIfSuspended(resp, appstate) {
   try {
-    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const appstateCUser = (appstate.find(i => i.key == 'i_user') || appstate.find(i => i.key == 'c_user'))
     const UID = appstateCUser?.value;
     const suspendReasons = {};
     if (resp) {
@@ -187,7 +187,7 @@ async function checkIfSuspended(resp, appstate) {
 
 async function checkIfLocked(resp, appstate) {
   try {
-    const appstateCUser = (appstate.find(i => i.key == 'c_user') || appstate.find(i => i.key == 'i_user'))
+    const appstateCUser = (appstate.find(i => i.key == 'i_user') || appstate.find(i => i.key == 'c_user'))
     const UID = appstateCUser?.value;
     const lockedReasons = {};
     if (resp) {
@@ -452,7 +452,7 @@ function refreshAction() {
     }
 }
 
-log.info("cron", `fb_dtsg for ${userID} will automatically refresh at 12:00 AM in PH Time.`)
+log.info("cronjob", `fb_dtsg for ${userID} will automatically refresh at 12:00 AM in PH Time.`)
 
 cron.schedule('0 0 * * *', () => {
     refreshAction();
