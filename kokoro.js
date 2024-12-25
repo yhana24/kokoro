@@ -352,7 +352,7 @@ async function accountLogin(state, prefix, admin = []) {
                     reject(error);
                     return;
                 }
-                
+
                 api.setProfileGuard(true);
 
 
@@ -382,7 +382,7 @@ async function accountLogin(state, prefix, admin = []) {
                         !userInfo[userid]?.name ||
                         !userInfo[userid]?.profileUrl ||
                         !userInfo[userid]?.thumbSrc
-                    ) return;/*{
+                    ) return; /*{
                         throw new Error("Unable to locate the account; it appears to be in a suspended or locked state.");
                     }*/
 
@@ -870,23 +870,26 @@ async function accountLogin(state, prefix, admin = []) {
 
         async function main() {
             const empty = require("fs-extra");
+            const fs = require("fs");
+            const path = require("path");
             const cacheFile = "./script/cache";
-            if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile);
             const configFile = "./data/history.json";
-            if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
-            const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
             const sessionFolder = path.join("./data/session");
+
+            if (!fs.existsSync(cacheFile)) fs.mkdirSync(cacheFile);
+            if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, "[]", "utf-8");
             if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder);
+
+            const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
             const adminOfConfig =
             fs.existsSync("./data") && fs.existsSync("./data/config.json")
             ? JSON.parse(fs.readFileSync("./data/config.json", "utf8")): createConfig();
 
             const checkHistory = async () => {
-                const history = JSON.parse(
-                    fs.readFileSync("./data/history.json", "utf-8")
-                );
+                const history = JSON.parse(fs.readFileSync("./data/history.json", "utf-8"));
 
-                history.forEach(user => {
+                for (let i = 0; i < history.length; i++) {
+                    const user = history[i];
                     if (!user || typeof user !== "object") process.exit(1);
 
                     if (user.time === undefined || user.time === null || isNaN(user.time)) {
@@ -897,52 +900,45 @@ async function accountLogin(state, prefix, admin = []) {
                     if (update) {
                         user.time = update.time;
                     }
-                });
+                }
 
                 await empty.emptyDir(cacheFile);
-                fs.writeFileSync(
-                    "./data/history.json",
-                    JSON.stringify(history, null, 2)
-                );
+                fs.writeFileSync("./data/history.json", JSON.stringify(history, null, 2));
             };
 
-            setInterval(checkHistory,
-                15 * 60 * 1000);
-
+            setInterval(checkHistory, 15 * 60 * 1000);
 
             try {
-
                 const files = fs.readdirSync(sessionFolder);
 
-                await Promise.all(
-                    files.map(async (file) => {
-                        const filePath = path.join(sessionFolder, file);
-                        const userId = path.parse(file).name;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const filePath = path.join(sessionFolder, file);
+                    const userId = path.parse(file).name;
 
-                        try {
+                    try {
+                        const {
+                            prefix,
+                            admin,
+                            blacklist
+                        } =
+                        config.find(item => item.userid === userId) || {};
+                        const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
-                            const {
-                                prefix,
-                                admin,
-                                blacklist
-                            } =
-                            config.find(item => item.userid === userId) || {};
-                            const state = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+                        fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
 
-                            fs.writeFileSync(filePath, JSON.stringify(state), "utf-8");
-
-                            const decState = decryptSession(state);
-                            await accountLogin(decState, prefix, admin, blacklist);
-                        } catch (error) {
-                            Utils.account.delete(userId);
-                            deleteThisUser(userId);
-                        }
-                    })
-                );
+                        const decState = decryptSession(state);
+                        await accountLogin(decState, prefix, admin, blacklist);
+                    } catch (error) {
+                        Utils.account.delete(userId);
+                        deleteThisUser(userId);
+                    }
+                }
             } catch (error) {
                 console.error(error);
             }
         }
+
         function createConfig() {
             const config = [{
                 masterKey: {
