@@ -441,15 +441,15 @@ let isFirstRun = true;
 
 function refreshAction() {
         const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
-        if (fbDtsgData && fbDtsgData[userId]) {
-            const userFbDtsg = fbDtsgData[userId];
+        if (fbDtsgData && fbDtsgData[userID]) {
+            const userFbDtsg = fbDtsgData[userID];
 
             api.refreshFb_dtsg(userFbDtsg)
-                .then(() => log.warn("login", `Fb_dtsg refreshed successfully for user ${userId}.`))
-                .catch((err) => log.error("login", `Error during Fb_dtsg refresh for user ${userId}:`, err))
+                .then(() => log.warn("login", `Fb_dtsg refreshed successfully for user ${userID}.`))
+                .catch((err) => log.error("login", `Error during Fb_dtsg refresh for user ${userID}:`, err))
                 .finally(scheduleNextRefresh);
         } else {
-            log.error("login", `No fb_dtsg data found for user ${userId}.`);
+            log.error("login", `No fb_dtsg data found for user ${userID}.`);
             scheduleNextRefresh();
         }
 }
