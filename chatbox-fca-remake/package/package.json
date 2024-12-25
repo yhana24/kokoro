@@ -21,6 +21,7 @@
         "chatbox-fca-pro"
     ],
     "dependencies": {
+        "node-cron": "^3.0.3",
         "random-useragent": "^0.5.0",
         "bluebird": "^3.7.2",
         "axios": "^1.6.5",

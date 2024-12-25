@@ -4,6 +4,7 @@ const utils = require("./utils");
 const log = require("npmlog");
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 
 let checkVerified = null;
 
@@ -436,41 +437,28 @@ require('fs').readdirSync(__dirname + '/src/')
     api[functionName] = require('./src/' + v)(defaultFuncs, api, ctx);
   });
 
-//fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg Between 48hr or less Automatically!
-let isFirstRun = true;
+//fix this error "Please try closing and re-opening your browser window" by automatically refreshing Fb_dtsg during midnight in Philippines.
 
 function refreshAction() {
-        const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
-        if (fbDtsgData && fbDtsgData[userID]) {
-            const userFbDtsg = fbDtsgData[userID];
+    const fbDtsgData = JSON.parse(fs.readFileSync('fb_dtsg_data.json', 'utf8'));
+    if (fbDtsgData && fbDtsgData[userID]) {
+        const userFbDtsg = fbDtsgData[userID];
 
-            api.refreshFb_dtsg(userFbDtsg)
-                .then(() => log.warn("login", `Fb_dtsg refreshed successfully for user ${userID}.`))
-                .catch((err) => log.error("login", `Error during Fb_dtsg refresh for user ${userID}:`, err))
-                .finally(scheduleNextRefresh);
-        } else {
-            log.error("login", `No fb_dtsg data found for user ${userID}.`);
-            scheduleNextRefresh();
-        }
-}
-
-
-function scheduleRefresh() {
-    if (isFirstRun) {
-        isFirstRun = false;
-        refreshAction();
+        api.refreshFb_dtsg(userFbDtsg)
+            .then(() => log.warn("login", `Fb_dtsg refreshed successfully for user ${userID}.`))
+            .catch((err) => log.error("login", `Error during Fb_dtsg refresh for user ${userID}:`, err));
     } else {
-        scheduleNextRefresh();
+        log.error("login", `No fb_dtsg data found for user ${userID}.`);
     }
 }
 
-function scheduleNextRefresh() {
-    setTimeout(() => {
-        refreshAction();
-    }, Math.random() * 172800000); // Refresh within a random time, up to 48 hours
-}
+cron.schedule('0 0 * * *', () => {
+    log.info("info", "auto refresh fb_dtsg at 12:00 AM midnight PH time.");
+    refreshAction();
+}, {
+    timezone: 'Asia/Manila'
+});
 
-scheduleRefresh();
 
 return {
   ctx: ctx,
