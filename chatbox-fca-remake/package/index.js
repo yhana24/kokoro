@@ -221,24 +221,30 @@ function buildAPI(globalOptions, html, jar) {
     
     
     let cookie = jar.getCookies("https://www.facebook.com");
-    let primary_profile = cookie.filter(val => val.cookieString().split("=")[0] === "c_user");
-    let secondary_profile = cookie.filter(val => val.cookieString().split("=")[0] === "i_user");
-
+    let primary_profile = cookie.filter(function (val) {
+        return val.cookieString().split("=")[0] === "c_user";
+    });
+    let secondary_profile = cookie.filter(function (val) {
+        return val.cookieString().split("=")[0] === "i_user";
+    });
     if (primary_profile.length === 0 && secondary_profile.length === 0) {
         throw {
-            error: "No valid cookies found. Please verify login manually in a browser.",
+            error:
+            "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.",
         };
-    }
-    
-    if (primary_profile.length > 0) {
-        userID = primary_profile[0].cookieString().split("=")[1].toString();
-    } else if (secondary_profile.length > 0) {
-        log.warn("login", "Using secondary profile (i_user) instead of primary (c_user).");
-        userID = secondary_profile[0].cookieString().split("=")[1].toString();
     } else {
-        throw {
-            error: "Unable to resolve userID from cookies.",
-        };
+        if (html.indexOf("/checkpoint/block/?next") > -1) {
+            return log.warn(
+                "login",
+                "Checkpoint detected. Please log in with a browser to verify."
+            );
+        }
+        if (secondary_profile[0] && secondary_profile[0].cookieString().includes('i_user')) {
+            log.warn("login", "Using secondary profile (i_user) instead of primary (c_user).");
+            userID = secondary_profile[0].cookieString().split("=")[1].toString();
+        } else {
+            userID = primary_profile[0].cookieString().split("=")[1].toString();
+        }
     }
     
     log.info("login", `Logged in as ${userID}`);
@@ -601,15 +607,15 @@ async function login(loginData, options, callback) {
     const globalOptions = {
         selfListen: false,
         listenEvents: true,
-        listenTyping: false,
-        updatePresence: false,
-        forceLogin: false,
-        autoMarkDelivery: true,
+        listenTyping: true,
+        updatePresence: true,
+        forceLogin: true,
+        autoMarkDelivery: false,
         autoMarkRead: false,
         autoReconnect: true,
         logRecordSize: defaultLogRecordSize,
         online: true,
-        emitReady: false,
+        emitReady: true,
         userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:132.0) Gecko/20100101 Firefox/132.0"
     };
 
