@@ -46,7 +46,7 @@ module.exports["run"] = async ({
         helpMessage += `\n• To see another page, use "HELP" [page-number]'\n`;
         helpMessage += `• For more information use "HELP" [cmd name]"\n\n`;
         helpMessage += `NOTE: NOT FOR SALE!\n- This bot is intended to be provided free of charge.`;
-        helpMessage += `GCASH NO: 09468377615. If you'd like to support us and keep our server running 24/7, please consider donating.`;
+        helpMessage += `\nGCASH NO: 09468377615. If you'd like to support us and keep our server running 24/7, please consider donating.`;
 
         await chat.reply(helpMessage);
             const url_array = [
