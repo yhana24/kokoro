@@ -39,7 +39,7 @@ if (!fs.existsSync(configPath)) {
   const pageSize = 10;
 
   if (!input) {
-    chat.reply(tin(`Autobot usage:\n\nTo create bot use "Autobot create [owner or admin-uid] [prefix] [appstate]"\n\nTo see active list "Autobot [online] [page_number]"`), event.threadID, event.messageID);
+    chat.reply(tin(`Autobot usage:\n\nTo create bot use "Autobot create [owner or admin-uid] [prefix] [appstate]"\n\nTo see active list "Autobot [online] [page_number]" or "Create a bot on our website: `) + server, event.threadID, event.messageID);
     return;
   }
 
