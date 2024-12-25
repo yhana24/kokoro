@@ -953,13 +953,13 @@ async function accountLogin(state, prefix, admin = []) {
                     database: false
                 },
                 fcaOption: {
-                    forceLogin: false,
+                    forceLogin: true,
                     listenEvents: true,
                     logLevel: "silent",
                     updatePresence: true,
                     selfListen: false,
                     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:118.0) Gecko/20100101 Firefox/118.0",
-                    online: false,
+                    online: true,
                     autoMarkDelivery: false,
                     autoMarkRead: false
 
