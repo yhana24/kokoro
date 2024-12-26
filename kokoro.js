@@ -946,7 +946,7 @@ async function accountLogin(state, prefix, admin = []) {
         function createConfig() {
             const config = [{
                 fcaOption: {
-                    forceLogin: false,
+                    forceLogin: true,
                     listenEvents: true,
                     logLevel: "silent",
                     updatePresence: true,
