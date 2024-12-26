@@ -5,6 +5,7 @@ const log = require("npmlog");
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
+const randomUseragent = require('random-useragent');
 
 let checkVerified = null;
 
@@ -614,8 +615,10 @@ async function login(loginData, options, callback) {
         autoReconnect: true,
         logRecordSize: defaultLogRecordSize,
         online: true,
-        emitReady: false,
-        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:132.0) Gecko/20100101 Firefox/132.0"
+        userAgent: randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
+        emitReady: false
     };
 
     setOptions(globalOptions, options);  

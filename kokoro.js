@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const randomUseragent = require('random-useragent');
 const login = require("./chatbox-fca-remake/package/index");
 const {
     workers
@@ -436,6 +437,9 @@ async function accountLogin(state, prefix, admin = []) {
                         updatePresence,
                         selfListen,
                         forceLogin,
+                        userAgent: randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
                         online,
                         autoMarkDelivery,
                         autoMarkRead
@@ -941,19 +945,14 @@ async function accountLogin(state, prefix, admin = []) {
 
         function createConfig() {
             const config = [{
-                masterKey: {
-                    devMode: true,
-                    database: false
-                },
                 fcaOption: {
-                    forceLogin: true,
+                    forceLogin: false,
                     listenEvents: true,
                     logLevel: "silent",
                     updatePresence: true,
                     selfListen: false,
-                    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:118.0) Gecko/20100101 Firefox/118.0",
                     online: true,
-                    autoMarkDelivery: false,
+                    autoMarkDelivery: true,
                     autoMarkRead: false
 
                 }
