@@ -1,4 +1,5 @@
 const axios = require('axios');
+const randomUseragent = require('random-useragent');
 
 module.exports["config"] = {
     name: "smsbomb",
@@ -55,6 +56,14 @@ module.exports["run"] = async ({
         return result;
     };
 
+    const generateUuidDeviceId = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r: (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
     const createAccount = async (username, password, phone) => {
         const data = {
             username,
@@ -70,7 +79,9 @@ module.exports["run"] = async ({
                 data,
                 {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+                        'User-Agent': randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
                         'Accept': 'application/json, text/plain, */*',
                         'Accept-Encoding': 'gzip, deflate, br, zstd',
                         'Content-Type': 'application/json',
@@ -79,7 +90,7 @@ module.exports["run"] = async ({
                         'accept-language': 'en-US',
                         'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
                         'sec-ch-ua-mobile': '?1',
-                        'deviceid': '',
+                        'deviceid': generateUuidDeviceId(),
                         'versioncode': '',
                         'version': '',
                         'origin': 'https://slotmax.vip',
@@ -111,7 +122,9 @@ module.exports["run"] = async ({
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'User-Agent': 'Mozilla/5.0',
+                        'User-Agent': randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
                     },
                 }
             );
@@ -135,7 +148,9 @@ module.exports["run"] = async ({
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'User-Agent': 'Mozilla/5.0',
+                        'User-Agent': randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
                         cookie,
                     },
                 }
