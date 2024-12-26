@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports["config"] = {
   name: "phi3",
-  aliases: ["phi-3"]
+  aliases: ["phi-3"],
   isPrefix: false,
   version: "1.0.0",
   credits: "Kenneth Panio",
