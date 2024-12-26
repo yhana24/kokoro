@@ -79,26 +79,12 @@ module.exports["run"] = async ({
                 data,
                 {
                     headers: {
-                        'User-Agent': randomUseragent.getRandom(function (ua) {
-                            return ua.browserName === 'Firefox';
-                        }),
+                        'User-Agent': randomUseragent.getRandom((ua) => ua.browserName === 'Firefox'),
                         'Accept': 'application/json, text/plain, */*',
-                        'Accept-Encoding': 'gzip, deflate, br, zstd',
                         'Content-Type': 'application/json',
-                        'sec-ch-ua-platform': '"Android"',
                         'requestfrom': 'H5',
-                        'accept-language': 'en-US',
-                        'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-                        'sec-ch-ua-mobile': '?1',
                         'deviceid': generateUuidDeviceId(),
-                        'versioncode': '',
-                        'version': '',
-                        'origin': 'https://slotmax.vip',
-                        'sec-fetch-site': 'same-origin',
-                        'sec-fetch-mode': 'cors',
-                        'sec-fetch-dest': 'empty',
-                        'referer': `https://slotmax.vip/register?code=${Date.now()}`,
-                        'priority': 'u=1, i',
+                        'referer': `https://slotmax.vip/game`,
                     },
                 }
             );
