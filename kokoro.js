@@ -428,7 +428,7 @@ async function accountLogin(state, prefix, admin = []) {
                     });
 
                     const {
-                        listenEvents, logLevel, updatePresence, selfListen, forceLogin, online, autoMarkDelivery, autoMarkRead
+                        listenEvents, logLevel, updatePresence, selfListen, forceLogin, online, autoMarkDelivery, autoMarkRead, userAgent
                     } = config[0].fcaOption;
 
                     api.setOptions({
@@ -437,9 +437,7 @@ async function accountLogin(state, prefix, admin = []) {
                         updatePresence,
                         selfListen,
                         forceLogin,
-                        userAgent: randomUseragent.getRandom(function (ua) {
-                            return ua.browserName === 'Firefox';
-                        }),
+                        userAgent: ,
                         online,
                         autoMarkDelivery,
                         autoMarkRead
@@ -946,6 +944,9 @@ async function accountLogin(state, prefix, admin = []) {
         function createConfig() {
             const config = [{
                 fcaOption: {
+                    userAgent: randomUseragent.getRandom(function (ua) {
+                            return ua.browserName === 'Firefox';
+                        }),
                     forceLogin: true,
                     listenEvents: true,
                     logLevel: "silent",
