@@ -383,9 +383,9 @@ async function accountLogin(state, prefix, admin = []) {
                         !userInfo[userid]?.name ||
                         !userInfo[userid]?.profileUrl ||
                         !userInfo[userid]?.thumbSrc
-                    ) return; /*{
-                        throw new Error("Unable to locate the account; it appears to be in a suspended or locked state.");
-                    }*/
+                    ) {
+                        throw new Error("Unable to locate the account; it appears to be in a temporary blocked or suspended/locked state.");
+                    }
 
                     const {
                         name,
