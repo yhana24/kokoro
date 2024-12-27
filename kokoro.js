@@ -437,7 +437,7 @@ async function accountLogin(state, prefix, admin = []) {
                         updatePresence,
                         selfListen,
                         forceLogin,
-                        userAgent: ,
+                        userAgent,
                         online,
                         autoMarkDelivery,
                         autoMarkRead
