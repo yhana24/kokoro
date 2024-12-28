@@ -1,5 +1,6 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const randomUseragent = require('random-useragent');
 
 module.exports["config"] = {
     name: "aria",
@@ -24,84 +25,97 @@ async function getAccessToken() {
     const response = await axios.post('https://oauth2.opera-api.com/oauth2/v1/token/', data, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'User-Agent': 'Mozilla/5.0',
-        },
-    });
-
-    return response.data.access_token;
-}
-
-async function queryOperaAPI(query, userId) {
-    const token = await getAccessToken();
-    const key = crypto.randomBytes(32).toString('base64');
-
-    const payload = {
-        query,
-        convertational_id: userId,
-        stream: true,
-        linkify: true,
-        linkify_version: 3,
-        sia: true,
-        supported_commands: [],
-        media_attachments: [],
-        encryption: {
-            key
-        },
-    };
-
-    const response = await axios.post('https://composer.opera-api.com/api/v1/a-chat', payload, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'User-Agent': 'Mozilla/5.0',
-        },
-        responseType: 'stream',
-    });
-
-    return new Promise((resolve, reject) => {
-        let result = '';
-        response.data.on('data', (chunk) => {
-            const match = chunk.toString().match(/"message":"(.*?)"/);
-            if (match) {
-                const message = match[1]
-                .replace(/\\n/g, '\n')
-                .replace(/\\ud83d\\ude0a|\\ud83d\\ude04|\\ud83d\\udc4b/g, '')
-                .replace(/\\u/g, ' ')
-                result += message;
-            }
+            'User-Agent': randomUseragent.getRandom(function (ua) {
+                return ua.browserName === 'Opera';
+            }),
         });
 
-        response.data.on('end',
-            () => {
-                const rawStr = Buffer.from(result, 'utf-8').toString('utf-8');
-                resolve(rawStr.trim());
+        return response.data.access_token;
+    }
+
+    async function queryOperaAPI(query, userId) {
+        const token = await getAccessToken();
+        const key = crypto.randomBytes(32).toString('base64');
+
+        const payload = {
+            query,
+            convertational_id: userId,
+            stream: true,
+            linkify: true,
+            linkify_version: 3,
+            sia: true,
+            supported_commands: [],
+            media_attachments: [],
+            encryption: {
+                key
+            },
+        };
+
+        const response = await axios.post('https://composer.opera-api.com/api/v1/a-chat', payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'User-Agent': randomUseragent.getRandom(function (ua) {
+                    return ua.browserName === 'Opera';
+                }),
+                'x-opera-ui-language': 'en',
+                'accept-language': 'en-US',
+                'sec-ch-ua': '"OperaMobile";v="86", ";Not A Brand";v="99", "Opera";v="115", "Chromium";v="130"',
+                'sec-ch-ua-mobile': '?1',
+                'x-opera-timezone': '+08:00',
+                origin: 'opera-aria://ui',
+                'sec-fetch-site': 'cross-site',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-dest': 'empty',
+                priority: 'u=1, i',
+            },
+            responseType: 'stream',
+        });
+
+        return new Promise((resolve, reject) => {
+            let result = '';
+            response.data.on('data', (chunk) => {
+                const match = chunk.toString().match(/"message":"(.*?)"/);
+                if (match) {
+                    const message = match[1]
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\ud83d\\ude0a|\\ud83d\\ude04|\\ud83d\\udc4b/g, '')
+                    .replace(/\\u/g, ' ')
+                    result += message;
+                }
             });
 
-        response.data.on('error',
-            (err) => reject(err));
-    });
-}
+            response.data.on('end',
+                () => {
+                    const rawStr = Buffer.from(result, 'utf-8').toString('utf-8');
+                    resolve(rawStr.trim());
+                });
 
-
-module.exports["run"] = async ({
-    chat, args, font, event
-}) => {
-    var mono = txt => font.monospace(txt);
-    const prompt = args.join(" ");
-
-    if (!prompt) {
-        return chat.reply(mono("Please kindly provide your message!"));
+            response.data.on('error',
+                (err) => reject(err));
+        });
     }
 
-    const answering = await chat.reply(mono("Generating response..."));
 
-    try {
-        const response = await queryOperaAPI(prompt, event.senderID);
-        const formattedAnswer = response.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
-        answering.unsend();
-        chat.reply(formattedAnswer);
-    } catch (error) {
-        answering.unsend();
-        chat.reply(mono(error.message));
-    }
-};
+    module.exports["run"] = async ({
+        chat, args, font, event
+    }) => {
+        var mono = txt => font.monospace(txt);
+        const prompt = args.join(" ");
+
+        if (!prompt) {
+            return chat.reply(mono("Please kindly provide your message!"));
+        }
+
+        const answering = await chat.reply(mono("Generating response..."));
+
+        try {
+            const response = await queryOperaAPI(prompt, event.senderID);
+            const formattedAnswer = response.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
+            answering.unsend();
+            chat.reply(formattedAnswer);
+        } catch (error) {
+            answering.unsend();
+            chat.reply(mono(error.message));
+        }
+    };
