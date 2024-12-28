@@ -29,8 +29,8 @@ async function waitForFilesActive(files, fileManager) {
 
 module.exports = {
     config: {
-        name: "geminiflash",
-        aliases: ["gmflash", "gmf"],
+        name: "gemini",
+        aliases: ["gmflash", "gmf", "geminiflash"],
         isPrefix: false,
         version: "1.0.0",
         credits: "Kenneth Panio",
