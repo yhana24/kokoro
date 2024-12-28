@@ -78,7 +78,7 @@ async function queryOperaAPI(query, userId) {
 }
 
 
-module.exports["run"] = async ({ chat, args, font }) => {
+module.exports["run"] = async ({ chat, args, font, event }) => {
         var mono = txt => font.monospace(txt);
         const prompt = args.join(" ");
         
