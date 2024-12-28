@@ -374,7 +374,7 @@ function buildAPI(globalOptions, html, jar) {
             
         }
         if (!mqttEndpoint) {
-            mqttEndpoint = "wss://edge-chat.facebook.com/chat?region=" + region;
+            mqttEndpoint = "wss://edge-chat.facebook.com/chat?region=" + region + "&sid=" + userID;
         }
         log.info('login', `Server region ${region}`);
     
