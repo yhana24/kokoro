@@ -472,8 +472,6 @@ async function accountLogin(state, prefix, admin = []) {
 
                             const reply = async (msg) => {
                                 const msgInfo = await chat.reply(font.thin(msg));
-                                msgInfo?.unsend(15000);
-                            };
 
                             const historyPath = './data/history.json';
 
