@@ -472,6 +472,7 @@ async function accountLogin(state, prefix, admin = []) {
 
                             const reply = async (msg) => {
                                 const msgInfo = await chat.reply(font.thin(msg));
+                     msgInfo.unsend(15000);
                             };
 
                             const historyPath = './data/history.json';
@@ -931,8 +932,10 @@ async function accountLogin(state, prefix, admin = []) {
                         const decState = decryptSession(state);
                         await accountLogin(decState, prefix, admin, blacklist);
                     } catch (error) {
+                        if (error.error === "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.") {
                         Utils.account.delete(userId);
                         deleteThisUser(userId);
+                        }
                     }
                 }
             } catch (error) {

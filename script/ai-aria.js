@@ -62,8 +62,8 @@ async function queryOperaAPI(query, userId) {
       const match = chunk.toString().match(/"message":"(.*?)"/);
       if (match) {
         const message = match[1]
-          .replace(/\\n/g, '\n') // Handle line breaks
-          .replace(/\\ud83d\\ude0a|\\ud83d\\udc4b/g, ''); // Remove emojis
+          .replace(/\\n/g, '\n')
+          .replace(/\\ud83d\\ude0a|\\ud83d\\udc4b/g, '');
         result += message;
       }
     });
