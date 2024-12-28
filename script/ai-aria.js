@@ -90,7 +90,8 @@ module.exports["run"] = async ({ chat, args, font }) => {
         
         try {
             const response = await queryOperaAPI(prompt, event.senderID);
-                chat.reply(response);
+            const formattedAnswer = response.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
+                chat.reply(formattedAnswer);
         } catch (error) {
                 answering.unsend();
                 chat.reply(mono(error.message));
