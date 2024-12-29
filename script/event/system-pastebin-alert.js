@@ -1,7 +1,7 @@
 const axios = require('axios');
 const path = require('path');
 
-const owner = '100081201591674';
+const owner = '61564459952029';
 
 module.exports["config"] = {
   name: "pastebin-alert",
