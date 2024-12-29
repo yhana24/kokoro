@@ -130,9 +130,9 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
 
 		var topic;
 		var queue = {
-			sync_api_version: 10,
+			sync_api_version: 11,
 			max_deltas_able_to_process: 100,
-			delta_batch_size: 1000,
+			delta_batch_size: 500,
 			encoding: "JSON",
 			entity_fbid: ctx.userID,
 		};
