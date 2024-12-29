@@ -25,12 +25,28 @@ module.exports["run"] = ({ chat, font, event, args }) => {
         .map((style) => `- ${availableStyles[style](style)}`)
         .join("\n")}\n\nUsage: ${module.exports.config.usage}`;
 
+
     const replyText = event.messageReply?.body?.trim();
     const style = args[0]?.trim().toLowerCase();
-    const text = replyText || font.origin(args.slice(1).join(" ").trim());
+    const text = replyText || args.slice(1).join(" ").trim();
 
-    if (!args.length && !replyText) return chat.reply(font.thin(helpMessage));
-    if (!availableStyles[style]) return chat.reply(font.monospace(helpMessage));
 
-    chat.reply(availableStyles[style](text));
+    if (!style && !replyText) return chat.reply(font.thin(helpMessage));
+
+
+    if (!availableStyles[style]) {
+        return chat.reply(font.monospace(`Invalid style: '${style || "none"}'.\n\n${helpMessage}`));
+    }
+
+
+    if (!text) {
+        return chat.reply(font.monospace("Please provide text to style.\n\n" + helpMessage));
+    }
+
+    try {
+        const styledText = availableStyles[style](text);
+        chat.reply(styledText);
+    } catch (error) {
+        chat.reply(font.monospace(`An error occurred while applying the style: ${error.message}`));
+    }
 };
