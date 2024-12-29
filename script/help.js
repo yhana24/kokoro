@@ -31,7 +31,7 @@ module.exports["run"] = async ({
     const totalCommands = allCommands.length;
 
     if (!input) {
-        let helpMessage = `📚 | CMD LIST: 〔${prefix || 'NO PREFIX'}〕\n`;
+        let helpMessage = `📗 | 𝗖𝗵𝗲𝘀𝗰𝗮 𝗔𝘃𝗮𝗶𝗯𝗹𝗲 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀: 〔${prefix || 'NO PREFIX'}〕\n`;
         helpMessage += `TOTAL COMMANDS: ${totalCommands}\n\n`;
 
         const firstPageCommands = allCommands.slice(0, perPage);
