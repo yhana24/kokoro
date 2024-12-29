@@ -1,7 +1,7 @@
 module.exports["config"] = {
   name: 'restart',
   version: '1.0.0',
-  role: 3,
+  role: 1,
   aliases: ['resetbot', 'reboot'],
   info: 'Restart the bot',
   credits: 'Kenneth Panio',
