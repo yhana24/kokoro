@@ -74,26 +74,23 @@ async function queryOperaAPI(query, userId) {
         response.data.on('data', chunk => {
             const match = chunk.toString().match(/"message":"(.*?)"/);
             if (match) {
-                match[1].replace(/\\n/g, '\n')
-                .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
-                .replace(/\\([^\\\s]+)/g, '\n$1').replace(/\\+/g, '');
+                const message = match[1]
+                    .replace(/\\n/g, '\n')
+                    .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+                    .replace(/\\([^\\\s]+)/g, '\n$1').replace(/\\+/g, '');
                 result += message;
             }
         });
 
-        response.data.on('end',
-            () => {
-                resolve(result.trim());
-            });
+        response.data.on('end', () => {
+            resolve(result.trim());
+        });
 
-        response.data.on('error',
-            err => reject(err));
+        response.data.on('error', err => reject(err));
     });
 }
 
-module.exports.run = async ({
-    chat, args, font, event
-}) => {
+module.exports.run = async ({ chat, args, font, event }) => {
     const mono = txt => font.monospace(txt);
     const prompt = args.join(" ");
 
