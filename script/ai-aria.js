@@ -75,10 +75,9 @@ async function queryOperaAPI(query, userId) {
             const match = chunk.toString().match(/"message":"(.*?)"/);
             if (match) {
                 const message = match[1]
-                .replace(/\\(?!n)/g, '')
+                .replace(/\\/g, '\n')
                 .replace(/\\n/g, '\n')
-                .replace(/\\"/g, '"')
-                .replace(/\\\\/g, '\\');
+                .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
                 result += message;
             }
         });
