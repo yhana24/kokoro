@@ -37,7 +37,7 @@ async function queryOperaAPI(query, userId) {
     const key = crypto.randomBytes(32).toString('base64');
 
     const payload = {
-        query: query + "\n\n\nAlways keep your response without emoji.",
+        query,
         convertational_id: userId,
         stream: true,
         linkify: true,
@@ -50,7 +50,7 @@ async function queryOperaAPI(query, userId) {
 
     const response = await axios.post('https://composer.opera-api.com/api/v1/a-chat', payload, {
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': `Bearer ${token}`,
             'User-Agent': randomUseragent.getRandom(ua => ua.browserName === 'Opera'),
             'x-opera-ui-language': 'en',
@@ -74,17 +74,13 @@ async function queryOperaAPI(query, userId) {
             if (match) {
                 const message = match[1]
                     .replace(/\\n/g, '\n')
-                    .replace(/\\ud83d\\ude0a|d83c|dfb6|d83e|d83d|dc36|dd14|\\ud83d\\ude04|\\ud83d\\udc4b/g, '')
-                    .replace(/\\u/g, ' ')
-                    .replace(/2019d/g, "2019")
-                    .replace(/2019s/g, "2019");
+                    .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
                 result += message;
             }
         });
 
         response.data.on('end', () => {
-            const rawStr = Buffer.from(result, 'utf-8').toString('utf-8');
-            resolve(rawStr.trim());
+            resolve(result.trim());
         });
 
         response.data.on('error', err => reject(err));
@@ -108,6 +104,6 @@ module.exports.run = async ({ chat, args, font, event }) => {
         chat.reply(formattedAnswer);
     } catch (error) {
         answering.unsend();
-        chat.reply(mono(error.message));
+        chat.reply(mono("An error occurred: " + error.message));
     }
 };
