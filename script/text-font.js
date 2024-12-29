@@ -383,8 +383,7 @@ ${fontList}
 };
 
 module.exports["config"] = {
-  name: 'fontv2',
-  aliases: ["font2"],
+  name: 'font',
   version: '1.1.0',
   role: 0,
   credits: "Marjhun Baylon and Miko Mempin",
