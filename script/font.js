@@ -8,25 +8,6 @@ module.exports["config"] = {
 };
 
 module.exports["run"] = ({ chat, font, event, args }) => {
-    let style, text;
-
-    if (event.type === "message_reply" && event.messageReply.body) {
-        text = font.origin(event.messageReply.body.trim());
-        style = args[0]?.trim().toLowerCase();
-    } else {
-        if (args.length < 2) {
-            return chat.reply(font.thin(
-                `Please provide a style and text to apply the font, or reply to a message containing the text.\n\nAvailable styles:\n\n` +
-                `- ${font.thin('thin')}\n- ${font.monospace('monospace')}\n- ${font.bold('bold')}\n- ${font.italic('italic')}\n- ${font.underline('underline')}\n` +
-                `- ${font.strike('strike')}\n- ${font.roman('roman')}\n- ${font.bubble('bubble')}\n- ${font.squarebox('squarebox')}\n- ${font.origin('origin')}\n\n` +
-                `Usage: ${module.exports.config.usage}`
-            ));
-        }
-
-        style = args[0].trim().toLowerCase();
-        text = font.origin(args.slice(1).join(" ").trim());
-    }
-
     const availableStyles = {
         thin: font.thin,
         monospace: font.monospace,
@@ -40,15 +21,16 @@ module.exports["run"] = ({ chat, font, event, args }) => {
         origin: font.origin,
     };
 
-    if (!availableStyles[style]) {
-        return chat.reply(font.monospace(
-            `Unsupported style. Please use one of the following:\n\n` +
-            `- ${font.thin('thin')}\n- ${font.monospace('monospace')}\n- ${font.bold('bold')}\n- ${font.italic('italic')}\n- ${font.underline('underline')}\n` +
-            `- ${font.strike('strike')}\n- ${font.roman('roman')}\n- ${font.bubble('bubble')}\n- ${font.squarebox('squarebox')}\n- ${font.origin('origin')}\n\n` +
-            `Usage: ${module.exports.config.usage}`
-        ));
-    }
+    const helpMessage = `Please provide a style and text to apply the font, or reply to a message containing the text.\n\nAvailable styles:\n\n${Object.keys(availableStyles)
+        .map((style) => `- ${availableStyles[style](style)}`)
+        .join("\n")}\n\nUsage: ${module.exports.config.usage}`;
 
-    const styledText = availableStyles[style](text);
-    chat.reply(styledText);
+    const replyText = event.messageReply?.body?.trim();
+    const style = args[0]?.trim().toLowerCase();
+    const text = replyText || font.origin(args.slice(1).join(" ").trim());
+
+    if (!args.length && !replyText) return chat.reply(font.thin(helpMessage));
+    if (!availableStyles[style]) return chat.reply(font.monospace(helpMessage));
+
+    chat.reply(availableStyles[style](text));
 };
