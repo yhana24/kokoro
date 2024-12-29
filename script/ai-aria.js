@@ -74,7 +74,7 @@ async function queryOperaAPI(query, userId) {
         response.data.on('data', chunk => {
             const match = chunk.toString().match(/"message":"(.*?)"/);
             if (match) {
-                .replace(/\\n/g, '\n')
+                match[1].replace(/\\n/g, '\n')
                 .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
                 .replace(/\\([^\\\s]+)/g, '\n$1').replace(/\\+/g, '');
                 result += message;
