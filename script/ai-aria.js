@@ -37,7 +37,7 @@ async function queryOperaAPI(query, userId) {
     const key = crypto.randomBytes(32).toString('base64');
 
     const payload = {
-        query,
+        query: query + "\n\n\nAlways keep your response without emoji.",
         convertational_id: userId,
         stream: true,
         linkify: true,
