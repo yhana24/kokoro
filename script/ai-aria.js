@@ -76,7 +76,8 @@ async function queryOperaAPI(query, userId) {
                     .replace(/\\n/g, '\n')
                     .replace(/\\ud83d\\ude0a|d83c|dfb6|\\ud83d\\ude04|\\ud83d\\udc4b/g, '')
                     .replace(/\\u/g, ' ')
-                    .replace(/2019d/g, "2019");
+                    .replace(/2019d/g, "2019")
+                    .replace(/2019s/g, "2019");
                 result += message;
             }
         });
